@@ -21,7 +21,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   
-  <link rel="stylesheet" href="/style.css?v=20260907_04">
+  <link rel="stylesheet" href="/style.css?v=20260907_05">
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3321070604000141" crossorigin="anonymous"></script>
@@ -77,12 +77,53 @@
         한국사와 세계사를 연표로 보고, 연도로 외우고, 퀴즈로 기억해요.<br>
         중1부터 고1까지, 시험에 자주 나오는 역사 흐름을 하루 한 장면씩 쉽게 익혀보세요.
       </p>
-      <div class="hero-stats">
-        <div class="hero-stat-pill">🇰🇷 한국사 60대 핵심 사건</div>
-        <div class="hero-stat-pill">🌍 세계사 55대 핵심 사건</div>
-        <div class="hero-stat-pill">📝 기출변형 20제 수록</div>
-        <div class="hero-stat-pill">🖨️ 맞춤형 연표 프린트 생성</div>
+      <div class="hero-cta-row">
+        <a href="timeline.html" class="hero-cta hero-cta-main">
+          <span class="hero-cta-ico">⏳</span>
+          <span class="hero-cta-text">
+            <strong>한국사 연표 보기</strong>
+            <small>고조선부터 현대까지 한눈에</small>
+          </span>
+        </a>
+        <a href="quiz.html" class="hero-cta hero-cta-sub">
+          <span class="hero-cta-ico">🎯</span>
+          <span class="hero-cta-text">
+            <strong>역사 퀴즈 풀기</strong>
+            <small>4지선다로 가볍게 실력 점검</small>
+          </span>
+        </a>
       </div>
+    </section>
+
+    <!-- 핵심 기능 카드 4개 -->
+    <section class="feature-strip" aria-label="역사야 놀자 핵심 기능">
+      <article class="feature-card feature-korea">
+        <div class="feature-ico">🇰🇷</div>
+        <h3 class="feature-title">한국사 60대 핵심 사건</h3>
+        <p class="feature-desc">고조선부터 현대까지, 시험에 자주 나오는 사건만 골라 시대별로 정리했어요.</p>
+        <a href="korea.html" class="feature-link">한국사 보기 →</a>
+      </article>
+
+      <article class="feature-card feature-world">
+        <div class="feature-ico">🌍</div>
+        <h3 class="feature-title">세계사 55대 핵심 사건</h3>
+        <p class="feature-desc">4대 문명부터 냉전 이후까지, 세계사의 결정적 장면을 흐름으로 익혀요.</p>
+        <a href="world.html" class="feature-link">세계사 보기 →</a>
+      </article>
+
+      <article class="feature-card feature-exam">
+        <div class="feature-ico">📝</div>
+        <h3 class="feature-title">기출변형 20제 수록</h3>
+        <p class="feature-desc">핵심 출제 포인트를 담은 자체 제작 변형 문제와 상세 해설로 점검해요.</p>
+        <a href="exam.html" class="feature-link">문제 풀기 →</a>
+      </article>
+
+      <article class="feature-card feature-print">
+        <div class="feature-ico">🖨️</div>
+        <h3 class="feature-title">맞춤형 연표 프린트 생성</h3>
+        <p class="feature-desc">범위와 문항 수를 골라 나만의 연표 학습지를 만들고 바로 인쇄해요.</p>
+        <a href="print.html" class="feature-link">프린트 만들기 →</a>
+      </article>
     </section>
 
     <!-- 상단 광고 Placeholder -->
@@ -95,19 +136,74 @@
         <span class="today-date-chip" id="today-date-text">오늘의 역사</span>
       </div>
       <div class="today-grid">
-        <div class="today-item" id="today-korea-box">
+        <div class="today-item today-item-korea" id="today-korea-box">
           <div class="today-item-type">🇰🇷 오늘의 한국사</div>
           <div class="today-item-title">역사 사건 불러오는 중...</div>
         </div>
-        <div class="today-item" id="today-world-box">
+        <div class="today-item today-item-world" id="today-world-box">
           <div class="today-item-type">🌍 오늘의 세계사</div>
           <div class="today-item-title">역사 사건 불러오는 중...</div>
         </div>
       </div>
-      <div class="today-item" id="today-quiz-box" style="background:#FFFBEB; border-color:#FDE68A;">
+      <div class="today-item today-item-quiz" id="today-quiz-box">
         <div class="today-item-type">🎯 오늘의 한 줄 퀴즈</div>
         <div class="today-item-title">퀴즈를 불러오는 중...</div>
       </div>
+    </section>
+
+    <!-- 핵심 연표 미리보기 -->
+    <section class="tl-preview" aria-label="핵심 연표 미리보기">
+      <div class="tl-preview-head">
+        <h2>🗓️ 핵심 연표 미리보기</h2>
+        <p>한국사에서 가장 많이 나오는 연도 6개예요. 이것부터 외우면 나머지 흐름이 훨씬 쉬워져요.</p>
+      </div>
+
+      <ol class="tl-preview-list">
+        <li class="tl-preview-item">
+          <span class="tl-preview-year">BC 2333</span>
+          <div class="tl-preview-body">
+            <div class="tl-preview-title">고조선 건국</div>
+            <div class="tl-preview-desc">단군왕검이 아사달에 도읍한 우리 역사 최초의 국가예요.</div>
+          </div>
+        </li>
+        <li class="tl-preview-item">
+          <span class="tl-preview-year">676</span>
+          <div class="tl-preview-body">
+            <div class="tl-preview-title">신라 삼국 통일</div>
+            <div class="tl-preview-desc">매소성·기벌포 전투로 당을 몰아내고 삼국 통일을 완성했어요.</div>
+          </div>
+        </li>
+        <li class="tl-preview-item">
+          <span class="tl-preview-year">918</span>
+          <div class="tl-preview-body">
+            <div class="tl-preview-title">고려 건국</div>
+            <div class="tl-preview-desc">왕건이 송악에 도읍을 정하고 후삼국 통일의 기틀을 세웠어요.</div>
+          </div>
+        </li>
+        <li class="tl-preview-item">
+          <span class="tl-preview-year">1392</span>
+          <div class="tl-preview-body">
+            <div class="tl-preview-title">조선 건국</div>
+            <div class="tl-preview-desc">이성계가 조선을 세우고 곧 한양으로 도읍을 옮겼어요.</div>
+          </div>
+        </li>
+        <li class="tl-preview-item">
+          <span class="tl-preview-year">1919</span>
+          <div class="tl-preview-body">
+            <div class="tl-preview-title">3·1 운동</div>
+            <div class="tl-preview-desc">전국으로 퍼진 만세 운동으로 대한민국 임시정부가 세워졌어요.</div>
+          </div>
+        </li>
+        <li class="tl-preview-item">
+          <span class="tl-preview-year">1945</span>
+          <div class="tl-preview-body">
+            <div class="tl-preview-title">광복</div>
+            <div class="tl-preview-desc">8월 15일, 35년 만에 일제 강점기에서 벗어나 나라를 되찾았어요.</div>
+          </div>
+        </li>
+      </ol>
+
+      <a href="timeline.html" class="tl-preview-more">전체 연표 보러 가기 →</a>
     </section>
 
     <!-- 6대 메인 CTA 카드 -->

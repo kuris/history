@@ -1909,3 +1909,361 @@ button {
   color: #FFFFFF;
   border-color: var(--color-primary);
 }
+
+/* ==================== 메인 히어로 큰 CTA 버튼 ==================== */
+.hero-cta-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .hero-cta-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  text-align: left;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-cta-ico {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hero-cta-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-cta-text strong {
+  font-family: var(--font-display);
+  font-size: 17.5px;
+  letter-spacing: -0.01em;
+}
+
+.hero-cta-text small {
+  font-size: 12.5px;
+  font-weight: 700;
+  opacity: 0.82;
+}
+
+/* 1순위: 진한 브라운 채움 버튼 */
+.hero-cta-main {
+  background: linear-gradient(135deg, #A45309 0%, #78350F 100%);
+  color: #FFFFFF;
+  border-color: #78350F;
+  box-shadow: 0 6px 18px rgba(120, 53, 15, 0.28);
+}
+
+.hero-cta-main:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(120, 53, 15, 0.36);
+}
+
+/* 2순위: 골드 테두리 버튼 */
+.hero-cta-sub {
+  background: #FFFDF7;
+  color: var(--color-primary-dark);
+  border-color: var(--color-point);
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.16);
+}
+
+.hero-cta-sub:hover {
+  background: #FFF7E6;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(217, 119, 6, 0.26);
+}
+
+/* ==================== 핵심 기능 카드 4개 ==================== */
+.feature-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+@media (max-width: 900px) {
+  .feature-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .feature-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature-card {
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-border);
+  border-top: 4px solid var(--color-point);
+  border-radius: var(--radius-md);
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.feature-ico {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.feature-title {
+  font-family: var(--font-display);
+  font-size: 16.5px;
+  color: var(--color-primary-dark);
+  line-height: 1.35;
+  margin-bottom: 7px;
+}
+
+.feature-desc {
+  font-size: 13.5px;
+  color: var(--color-text-soft);
+  line-height: 1.55;
+  margin-bottom: 14px;
+  flex-grow: 1;
+}
+
+.feature-link {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-primary);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.feature-card:hover .feature-link {
+  color: var(--color-primary-dark);
+  border-bottom-color: var(--color-point);
+}
+
+/* 카드별 포인트 컬러 (아이보리 톤 유지 + 상단 라인만 구분) */
+.feature-korea { border-top-color: #B45309; }
+.feature-world { border-top-color: #0E7490; }
+.feature-exam  { border-top-color: #991B1B; }
+.feature-print { border-top-color: #047857; }
+
+.feature-korea:hover { border-color: #E8C39B; }
+.feature-world:hover { border-color: #A9CFD9; }
+.feature-exam:hover  { border-color: #E7BDBD; }
+.feature-print:hover { border-color: #A7D5C3; }
+
+/* ==================== 오늘의 역사 카드 계열별 배경 ==================== */
+.today-item-korea {
+  background: #FDF3E7;
+  border-color: #E8C39B;
+}
+
+.today-item-korea .today-item-type {
+  color: #B45309;
+}
+
+.today-item-world {
+  background: #EDF6F8;
+  border-color: #AFD3DD;
+}
+
+.today-item-world .today-item-type {
+  color: #0E7490;
+}
+
+.today-item-quiz {
+  background: #FFFAE6;
+  border-color: #FBD24E;
+}
+
+.today-item-quiz .today-item-type {
+  color: #A16207;
+}
+
+/* ==================== 핵심 연표 미리보기 ==================== */
+.tl-preview {
+  background: #FFFFFF;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 22px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-soft);
+}
+
+.tl-preview-head {
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--color-border-subtle);
+}
+
+.tl-preview-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--color-primary-dark);
+  margin-bottom: 6px;
+}
+
+.tl-preview-head p {
+  font-size: 13.5px;
+  color: var(--color-text-soft);
+  line-height: 1.55;
+}
+
+.tl-preview-list {
+  list-style: none;
+  position: relative;
+  margin: 0 0 18px;
+  padding: 2px 0 2px 0;
+}
+
+/* 세로 타임라인 축 */
+.tl-preview-list::before {
+  content: '';
+  position: absolute;
+  left: 74px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: linear-gradient(180deg, #FDE68A 0%, #D97706 50%, #FDE68A 100%);
+  border-radius: 2px;
+}
+
+.tl-preview-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 26px;
+  align-items: flex-start;
+  padding: 10px 0;
+}
+
+/* 축 위의 점 */
+.tl-preview-item::before {
+  content: '';
+  position: absolute;
+  left: 69px;
+  top: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-point);
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 0 0 2px var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.tl-preview-item:hover::before {
+  background: var(--color-accent);
+  transform: scale(1.15);
+}
+
+.tl-preview-year {
+  font-family: var(--font-history);
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--color-primary-dark);
+  text-align: right;
+  padding-top: 2px;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+
+.tl-preview-body {
+  background: var(--color-subtle-bg);
+  border: 1.5px solid var(--color-border-subtle);
+  border-left: 4px solid var(--color-point);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  transition: all 0.2s ease;
+}
+
+.tl-preview-item:hover .tl-preview-body {
+  border-color: var(--color-border);
+  border-left-color: var(--color-accent);
+  transform: translateX(3px);
+}
+
+.tl-preview-title {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  color: var(--color-text);
+  margin-bottom: 3px;
+}
+
+.tl-preview-desc {
+  font-size: 13px;
+  color: var(--color-text-soft);
+  line-height: 1.5;
+}
+
+.tl-preview-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  padding: 11px 22px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 3px 10px rgba(146, 64, 14, 0.2);
+  transition: all 0.2s ease;
+}
+
+.tl-preview-more:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(146, 64, 14, 0.3);
+}
+
+@media (max-width: 560px) {
+  .tl-preview {
+    padding: 20px 16px;
+  }
+
+  .tl-preview-list::before {
+    left: 5px;
+  }
+
+  .tl-preview-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 8px 0 8px 24px;
+  }
+
+  .tl-preview-item::before {
+    left: 0;
+    top: 14px;
+  }
+
+  .tl-preview-year {
+    text-align: left;
+    font-size: 13.5px;
+    color: var(--color-point);
+  }
+
+  .tl-preview-more {
+    display: flex;
+    width: 100%;
+  }
+}
