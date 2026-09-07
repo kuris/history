@@ -2440,3 +2440,228 @@ button {
   text-align: center;
   padding: 24px 8px;
 }
+
+/* ==================== 연표 함께 보기 (한국사 ↔ 세계사 대조) ==================== */
+.timeline-stream.is-compare {
+  display: block;
+}
+
+/* 상단 범례 — 어느 열이 무엇인지 한 번만 알려줍니다 */
+.cmp-legend {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--color-bg);
+  padding: 10px 0 12px;
+  margin-bottom: 4px;
+}
+
+.cmp-legend-k,
+.cmp-legend-w {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  text-align: center;
+  padding: 7px 10px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid;
+}
+
+.cmp-legend-k {
+  color: #B45309;
+  background: #FDF3E7;
+  border-color: #E8C39B;
+}
+
+.cmp-legend-w {
+  color: #0E7490;
+  background: #EDF6F8;
+  border-color: #AFD3DD;
+}
+
+.cmp-legend-divider {
+  width: 2px;
+  height: 22px;
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+/* 시대 구간 */
+.cmp-band {
+  margin-bottom: 22px;
+}
+
+.cmp-band-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 9px 14px;
+  background: var(--color-primary-dark);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.cmp-band-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: #FFFFFF;
+}
+
+.cmp-band-range {
+  font-family: var(--font-history);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #FDE68A;
+}
+
+/* 좌우 2열 — 비교가 목적이므로 모바일에서도 2열을 유지합니다 */
+.cmp-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  position: relative;
+}
+
+/* 가운데 구분선 */
+.cmp-cols::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  margin-left: -0.75px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--color-border) 0 6px,
+    transparent 6px 12px
+  );
+  pointer-events: none;
+}
+
+.cmp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cmp-item {
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-point);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+.cmp-item:hover {
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.cmp-col-korea .cmp-item {
+  border-left-color: #B45309;
+  background: #FFFDFA;
+}
+
+.cmp-col-world .cmp-item {
+  border-left-color: #0E7490;
+  background: #FBFDFE;
+}
+
+.cmp-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.cmp-item-year {
+  font-family: var(--font-history);
+  font-size: 12.5px;
+  font-weight: 900;
+  color: var(--color-primary-dark);
+  letter-spacing: -0.02em;
+}
+
+.cmp-col-world .cmp-item-year {
+  color: #0E7490;
+}
+
+.cmp-item-stars {
+  font-size: 10.5px;
+  color: var(--color-point);
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+.cmp-item-title {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  color: var(--color-text);
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.cmp-item-mnemonic {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-text-soft);
+  line-height: 1.45;
+  background: var(--color-subtle-bg);
+  border-radius: 6px;
+  padding: 6px 8px;
+  word-break: keep-all;
+}
+
+.cmp-empty {
+  font-size: 12.5px;
+  color: var(--color-text-light);
+  text-align: center;
+  padding: 18px 8px;
+  border: 1.5px dashed var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 560px) {
+  .cmp-cols {
+    gap: 8px;
+  }
+
+  .cmp-item {
+    padding: 8px 9px;
+    border-left-width: 3px;
+  }
+
+  .cmp-item-title {
+    font-size: 13px;
+  }
+
+  .cmp-item-year {
+    font-size: 11.5px;
+  }
+
+  /* 좁은 화면에서는 암기팁을 접어 두 열이 나란히 읽히도록 합니다 */
+  .cmp-item-mnemonic {
+    display: none;
+  }
+
+  .cmp-band-title {
+    font-size: 13.5px;
+  }
+
+  .cmp-legend-k,
+  .cmp-legend-w {
+    font-size: 12.5px;
+    padding: 6px 6px;
+  }
+}

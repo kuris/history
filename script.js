@@ -4005,6 +4005,83 @@
       return terms;
     }
 
+    // ------------------------------------------------------------
+    // 함께 보기 — 같은 시대 구간의 한국사와 세계사를 좌우로 맞대어 봅니다.
+    // 구간은 두 계열 모두 사건이 존재하도록 잡았습니다(양쪽 다 비는 구간 없음).
+    // ------------------------------------------------------------
+    const COMPARE_BANDS = [
+      { label: '고대 문명과 삼국',      range: 'BC 2333 ~ 675',  from: -99999, to: 675 },
+      { label: '남북국과 중세',         range: '676 ~ 917',      from: 676,    to: 917 },
+      { label: '고려와 중세 유럽',      range: '918 ~ 1391',     from: 918,    to: 1391 },
+      { label: '조선 전기와 대항해',    range: '1392 ~ 1591',    from: 1392,   to: 1591 },
+      { label: '조선 후기와 시민혁명',  range: '1592 ~ 1862',    from: 1592,   to: 1862 },
+      { label: '개항과 제국주의',       range: '1863 ~ 1909',    from: 1863,   to: 1909 },
+      { label: '일제강점기와 세계대전', range: '1910 ~ 1944',    from: 1910,   to: 1944 },
+      { label: '광복과 현대 세계',      range: '1945 ~',         from: 1945,   to: 99999 }
+    ];
+
+    function compareItemHtml(item) {
+      const stars = '★'.repeat(item.importance) + '☆'.repeat(3 - item.importance);
+      return `
+        <div class="cmp-item">
+          <div class="cmp-item-head">
+            <span class="cmp-item-year">${item.yearDisplay}</span>
+            <span class="cmp-item-stars" title="출제 중요도: ${item.importance}점">${stars}</span>
+          </div>
+          <div class="cmp-item-title">${item.title}</div>
+          ${item.mnemonic ? `<div class="cmp-item-mnemonic">💡 ${item.mnemonic}</div>` : ''}
+        </div>`;
+    }
+
+    function renderCompare(filtered) {
+      const korea = filtered.filter(e => e.type === 'korea');
+      const world = filtered.filter(e => e.type === 'world');
+
+      const bands = COMPARE_BANDS.map(b => ({
+        band: b,
+        k: korea.filter(e => e.year >= b.from && e.year <= b.to),
+        w: world.filter(e => e.year >= b.from && e.year <= b.to)
+      })).filter(x => x.k.length || x.w.length);
+
+      if (!bands.length) {
+        listContainer.innerHTML = emptyResultHtml();
+        return;
+      }
+
+      listContainer.innerHTML = `
+        <div class="cmp-legend">
+          <span class="cmp-legend-k">🇰🇷 한국사</span>
+          <span class="cmp-legend-divider"></span>
+          <span class="cmp-legend-w">🌍 세계사</span>
+        </div>
+      ` + bands.map(({ band, k, w }) => `
+        <section class="cmp-band">
+          <div class="cmp-band-head">
+            <span class="cmp-band-title">${band.label}</span>
+            <span class="cmp-band-range">${band.range}</span>
+          </div>
+          <div class="cmp-cols">
+            <div class="cmp-col cmp-col-korea">
+              ${k.length ? k.map(compareItemHtml).join('') : '<div class="cmp-empty">이 시기 사건 없음</div>'}
+            </div>
+            <div class="cmp-col cmp-col-world">
+              ${w.length ? w.map(compareItemHtml).join('') : '<div class="cmp-empty">이 시기 사건 없음</div>'}
+            </div>
+          </div>
+        </section>
+      `).join('');
+    }
+
+    function emptyResultHtml() {
+      return `
+        <div style="text-align:center; padding: 40px 20px; color: var(--color-text-soft); background:#fff; border-radius:16px; border:1.5px solid var(--color-border); margin:20px 0;">
+          <div style="font-size: 36px; margin-bottom: 10px;">🔍</div>
+          <h4 style="font-family:var(--font-display); color:var(--color-primary-dark); margin-bottom:6px;">검색 결과가 없습니다</h4>
+          <p style="font-size:14px;">'${searchQuery}'에 대한 사건을 찾을 수 없습니다. 다른 키워드(예: 5·18, 임진왜란, 조선, 1919)를 입력해 보세요.</p>
+        </div>
+      `;
+    }
+
     function renderTimeline() {
       let filtered = ALL_EVENTS;
 
@@ -4013,6 +4090,7 @@
       } else if (currentFilter === 'world') {
         filtered = filtered.filter(e => e.type === 'world');
       }
+      // 'compare' 는 두 계열을 모두 써야 하므로 타입 필터를 걸지 않습니다.
 
       if (searchQuery) {
         const terms = getSearchTerms(searchQuery);
@@ -4031,16 +4109,22 @@
         });
       }
 
-      if (countBadge) countBadge.textContent = `총 ${filtered.length}개 사건`;
+      const isCompare = currentFilter === 'compare';
+      listContainer.classList.toggle('is-compare', isCompare);
+
+      if (countBadge) {
+        countBadge.textContent = isCompare
+          ? `한국사 ${filtered.filter(e => e.type === 'korea').length} · 세계사 ${filtered.filter(e => e.type === 'world').length}`
+          : `총 ${filtered.length}개 사건`;
+      }
 
       if (filtered.length === 0) {
-        listContainer.innerHTML = `
-          <div style="text-align:center; padding: 40px 20px; color: var(--color-text-soft); background:#fff; border-radius:16px; border:1.5px solid var(--color-border); margin:20px 0;">
-            <div style="font-size: 36px; margin-bottom: 10px;">🔍</div>
-            <h4 style="font-family:var(--font-display); color:var(--color-primary-dark); margin-bottom:6px;">검색 결과가 없습니다</h4>
-            <p style="font-size:14px;">'${searchQuery}'에 대한 사건을 찾을 수 없습니다. 다른 키워드(예: 5·18, 임진왜란, 조선, 1919)를 입력해 보세요.</p>
-          </div>
-        `;
+        listContainer.innerHTML = emptyResultHtml();
+        return;
+      }
+
+      if (isCompare) {
+        renderCompare(filtered);
         return;
       }
 
