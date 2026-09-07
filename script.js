@@ -3512,38 +3512,134 @@
   }
 
   // ============================================================
-  // 3. 로컬스토리지 학습 데이터 관리
+  // 3. 학습 기록 관리
+  //    - 비로그인: localStorage 만 사용 (게스트도 그대로 학습 가능)
+  //    - 로그인:   Supabase 테이블에 기록하고, 집계는 DB 에서 읽음
+  //    user_metadata 동기화는 제거했습니다. auth.updateUser() 는 문항마다
+  //    호출되던 auth API 라 rate limit 대상이었고, JWT 에 학습 이력이
+  //    실려 다니는 구조라 오답 노트를 담을 수 없었습니다.
   // ============================================================
   const USER_STATS_KEY = 'playhistory_user_stats_v1';
+  // 오답 다시 풀기: 학습실에서 고른 문항 id 를 잠깐 넘겨주는 용도
+  const WRONG_RETRY_KEY = 'playhistory_wrong_retry_ids';
+
+  function emptyStats() {
+    return {
+      quizSolvedCount: 0,
+      quizCorrectCount: 0,
+      examSolvedCount: 0,
+      examCorrectCount: 0,
+      wrongOpenCount: 0,
+      completedPeriods: []
+    };
+  }
 
   function getUserStats() {
     const raw = localStorage.getItem(USER_STATS_KEY);
-    if (!raw) {
-      return {
-        quizSolvedCount: 0,
-        quizCorrectCount: 0,
-        examSolvedCount: 0,
-        completedPeriods: [],
-        savedWorksheets: 0
-      };
-    }
+    if (!raw) return emptyStats();
     try {
-      return JSON.parse(raw);
+      return Object.assign(emptyStats(), JSON.parse(raw));
     } catch {
-      return { quizSolvedCount: 0, quizCorrectCount: 0, examSolvedCount: 0, completedPeriods: [], savedWorksheets: 0 };
+      return emptyStats();
     }
   }
 
   function saveUserStats(stats) {
     try {
       localStorage.setItem(USER_STATS_KEY, JSON.stringify(stats));
-      if (sbClient && currentUser) {
-        sbClient.auth.updateUser({
-          data: { history_stats: stats }
-        }).catch(err => console.warn("Supabase user_metadata sync err:", err));
-      }
     } catch (e) {
-      console.warn("Failed to save stats", e);
+      console.warn('Failed to save stats', e);
+    }
+  }
+
+  /**
+   * 문항 하나의 풀이 결과를 기록합니다.
+   * localStorage 는 항상 즉시 갱신하고(게스트 대응 + UI 즉시 반영),
+   * 로그인 상태면 Supabase 에도 비동기로 남깁니다.
+   * 네트워크가 실패해도 화면 흐름을 막지 않습니다.
+   */
+  function recordAttempt({ source, questionId, isCorrect, chosenIndex }) {
+    const stats = getUserStats();
+    if (source === 'quiz') {
+      stats.quizSolvedCount += 1;
+      if (isCorrect) stats.quizCorrectCount += 1;
+    } else {
+      stats.examSolvedCount += 1;
+      if (isCorrect) stats.examCorrectCount += 1;
+    }
+    saveUserStats(stats);
+
+    if (!sbClient || !currentUser) return;
+
+    sbClient.from('quiz_attempts').insert({
+      user_id: currentUser.id,
+      source,
+      question_id: questionId,
+      is_correct: isCorrect,
+      chosen_index: typeof chosenIndex === 'number' ? chosenIndex : null
+    }).then(({ error }) => {
+      if (error) console.warn('attempt insert error:', error.message);
+    });
+
+    if (isCorrect) {
+      // 맞혔으면 오답 노트에서 내립니다 (기록이 없으면 아무 일도 일어나지 않음).
+      sbClient.from('wrong_answers')
+        .update({ resolved: true })
+        .eq('user_id', currentUser.id)
+        .eq('source', source)
+        .eq('question_id', questionId)
+        .then(({ error }) => {
+          if (error) console.warn('wrong resolve error:', error.message);
+        });
+    } else {
+      sbClient.rpc('record_wrong_answer', {
+        p_source: source,
+        p_question_id: questionId
+      }).then(({ error }) => {
+        if (error) console.warn('wrong upsert error:', error.message);
+      });
+    }
+  }
+
+  /** 로그인 상태면 DB 집계를, 아니면 localStorage 집계를 돌려줍니다. */
+  async function fetchStats() {
+    const local = getUserStats();
+    if (!sbClient || !currentUser) return local;
+    try {
+      const { data, error } = await sbClient.rpc('get_my_stats');
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) return local;
+      return {
+        quizSolvedCount: Number(row.quiz_solved) || 0,
+        quizCorrectCount: Number(row.quiz_correct) || 0,
+        examSolvedCount: Number(row.exam_solved) || 0,
+        examCorrectCount: Number(row.exam_correct) || 0,
+        wrongOpenCount: Number(row.wrong_open) || 0,
+        completedPeriods: local.completedPeriods || []
+      };
+    } catch (err) {
+      console.warn('stats fetch error:', err.message || err);
+      return local;
+    }
+  }
+
+  /** 아직 못 맞힌 오답 목록을 최근 순으로 가져옵니다. */
+  async function fetchWrongAnswers(limit = 30) {
+    if (!sbClient || !currentUser) return [];
+    try {
+      const { data, error } = await sbClient
+        .from('wrong_answers')
+        .select('source, question_id, wrong_count, last_wrong_at')
+        .eq('user_id', currentUser.id)
+        .eq('resolved', false)
+        .order('last_wrong_at', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.warn('wrong list error:', err.message || err);
+      return [];
     }
   }
 
@@ -4227,9 +4323,12 @@
             }
           });
 
-          const stats = getUserStats();
-          stats.examSolvedCount = (stats.examSolvedCount || 0) + 1;
-          saveUserStats(stats);
+          recordAttempt({
+            source: 'exam',
+            questionId: q.id,
+            isCorrect: chosenIdx === q.answer,
+            chosenIndex: chosenIdx
+          });
         });
 
         listContainer.appendChild(card);
@@ -4408,6 +4507,7 @@
     let currentIndex = 0;
     let score = 0;
     let quizType = 'all';
+    let retryPending = null;
 
     if (filterTabs.length > 0) {
       filterTabs.forEach(tab => {
@@ -4420,7 +4520,36 @@
       });
     }
 
+    /** 학습실에서 "오답 다시 풀기"로 넘어온 경우 그 문항들만 꺼냅니다. */
+    function takeRetryQuestions() {
+      if (!new URLSearchParams(location.search).has('mode')) return null;
+      let ids = [];
+      try {
+        ids = JSON.parse(sessionStorage.getItem(WRONG_RETRY_KEY) || '[]');
+      } catch {
+        ids = [];
+      }
+      sessionStorage.removeItem(WRONG_RETRY_KEY);
+      if (!Array.isArray(ids) || !ids.length) return null;
+      const picked = QUIZ_QUESTIONS.filter(q => ids.includes(q.id));
+      return picked.length ? picked : null;
+    }
+
     function startSession() {
+      const retry = retryPending;
+      retryPending = null;
+      if (retry) {
+        sessionQuestions = [...retry].sort(() => 0.5 - Math.random());
+        currentIndex = 0;
+        score = 0;
+        if (questionCard) questionCard.style.display = 'block';
+        if (resultCard) resultCard.style.display = 'none';
+        if (totalNumEl) totalNumEl.textContent = sessionQuestions.length;
+        showToast(`오답 ${sessionQuestions.length}문제로 복습을 시작합니다!`);
+        renderCurrentQuestion();
+        return;
+      }
+
       let pool = QUIZ_QUESTIONS;
       if (quizType === 'korea') pool = QUIZ_QUESTIONS.filter(q => q.type === 'korea');
       if (quizType === 'world') pool = QUIZ_QUESTIONS.filter(q => q.type === 'world');
@@ -4485,14 +4614,17 @@
       const isCorrect = chosenIdx === q.answer;
       if (isCorrect) score += 10;
 
-      const stats = getUserStats();
-      stats.quizSolvedCount = (stats.quizSolvedCount || 0) + 1;
-      if (isCorrect) stats.quizCorrectCount = (stats.quizCorrectCount || 0) + 1;
-      saveUserStats(stats);
+      recordAttempt({
+        source: 'quiz',
+        questionId: q.id,
+        isCorrect,
+        chosenIndex: chosenIdx
+      });
 
       if (feedbackBox) {
-        feedbackBox.style.display = 'block';
-        feedbackBox.style.cssText = `margin-top:16px; padding:14px 16px; border-radius:12px; border:1.5px solid ${isCorrect ? '#A7F3D0' : '#FECACA'}; background:${isCorrect ? '#F0FDF4' : '#FEF2F2'};`;
+        // cssText 로 덮어쓰면 위에서 준 display 가 지워지므로 여기에 함께 넣습니다.
+        // (.quiz-feedback-box 의 기본값이 display:none 이라 빠지면 해설이 안 보입니다)
+        feedbackBox.style.cssText = `display:block; margin-top:16px; padding:14px 16px; border-radius:12px; border:1.5px solid ${isCorrect ? '#A7F3D0' : '#FECACA'}; background:${isCorrect ? '#F0FDF4' : '#FEF2F2'};`;
         feedbackBox.innerHTML = `
           <div style="font-weight: 800; font-size: 15px; margin-bottom: 4px; color:${isCorrect ? '#15803D' : '#DC2626'};">
             ${isCorrect ? '🎉 딩동댕! 정답입니다.' : '💡 아쉬워요! 다시 기억해 보세요.'}
@@ -4525,6 +4657,7 @@
       });
     }
 
+    retryPending = takeRetryQuestions();
     startSession();
   }
 
@@ -4570,18 +4703,6 @@
       sbClient.auth.getSession().then(({ data }) => {
         if (data && data.session && data.session.user) {
           currentUser = data.session.user;
-          if (currentUser?.user_metadata?.history_stats) {
-            const remoteStats = currentUser.user_metadata.history_stats;
-            const localStats = getUserStats();
-            const merged = {
-              quizSolvedCount: Math.max(localStats.quizSolvedCount || 0, remoteStats.quizSolvedCount || 0),
-              quizCorrectCount: Math.max(localStats.quizCorrectCount || 0, remoteStats.quizCorrectCount || 0),
-              examSolvedCount: Math.max(localStats.examSolvedCount || 0, remoteStats.examSolvedCount || 0),
-              completedPeriods: [...new Set([...(localStats.completedPeriods || []), ...(remoteStats.completedPeriods || [])])],
-              savedWorksheets: Math.max(localStats.savedWorksheets || 0, remoteStats.savedWorksheets || 0)
-            };
-            saveUserStats(merged);
-          }
           renderDashboard();
         } else {
           renderGuestView();
@@ -4667,7 +4788,7 @@
       });
     }
 
-    function renderDashboard() {
+    async function renderDashboard() {
       authView.style.display = 'none';
       dashView.style.display = 'block';
 
@@ -4676,23 +4797,94 @@
       const greetingEl = document.getElementById('dash-greeting');
       if (greetingEl) greetingEl.textContent = `반가워요, ${name}님!`;
 
-      const stats = getUserStats();
       const statsGrid = document.getElementById('dash-stats-grid');
+      const stats = await fetchStats();
+      const accuracy = stats.quizSolvedCount
+        ? Math.round((stats.quizCorrectCount / stats.quizSolvedCount) * 100)
+        : 0;
+
       if (statsGrid) {
         statsGrid.innerHTML = `
-          <div style="background:#FFFBEB; border:1.5px solid var(--color-border); padding:16px; border-radius:14px; text-align:center;">
-            <div style="font-size:12px; color:var(--color-text-soft);">풀어본 퀴즈</div>
-            <div style="font-family:var(--font-display); font-size:24px; color:var(--color-primary-dark); margin-top:4px;">${stats.quizSolvedCount}문제</div>
+          <div class="dash-stat dash-stat-quiz">
+            <div class="dash-stat-label">풀어본 퀴즈</div>
+            <div class="dash-stat-value">${stats.quizSolvedCount}<span>문제</span></div>
           </div>
-          <div style="background:#ECFDF5; border:1.5px solid #A7F3D0; padding:16px; border-radius:14px; text-align:center;">
-            <div style="font-size:12px; color:#065F46;">퀴즈 맞힌 개수</div>
-            <div style="font-family:var(--font-display); font-size:24px; color:#059669; margin-top:4px;">${stats.quizCorrectCount}개</div>
+          <div class="dash-stat dash-stat-correct">
+            <div class="dash-stat-label">퀴즈 정답률</div>
+            <div class="dash-stat-value">${accuracy}<span>%</span></div>
           </div>
-          <div style="background:#EFF6FF; border:1.5px solid #BFDBFE; padding:16px; border-radius:14px; text-align:center;">
-            <div style="font-size:12px; color:#1E40AF;">푼 기출변형</div>
-            <div style="font-family:var(--font-display); font-size:24px; color:#2563EB; margin-top:4px;">${stats.examSolvedCount}문항</div>
+          <div class="dash-stat dash-stat-exam">
+            <div class="dash-stat-label">푼 기출변형</div>
+            <div class="dash-stat-value">${stats.examSolvedCount}<span>문항</span></div>
+          </div>
+          <div class="dash-stat dash-stat-wrong">
+            <div class="dash-stat-label">복습할 오답</div>
+            <div class="dash-stat-value">${stats.wrongOpenCount}<span>개</span></div>
           </div>
         `;
+      }
+
+      renderWrongNotes();
+    }
+
+    // ------------------------------------------------------------
+    // 오답 노트 — DB 의 wrong_answers 를 문항 데이터와 이어 붙여 보여줍니다.
+    // ------------------------------------------------------------
+    function findQuestion(source, questionId) {
+      const pool = source === 'exam' ? EXAM_QUESTIONS : QUIZ_QUESTIONS;
+      return pool.find(q => q.id === questionId) || null;
+    }
+
+    async function renderWrongNotes() {
+      const box = document.getElementById('wrong-note-list');
+      const retryBtn = document.getElementById('wrong-retry-btn');
+      if (!box) return;
+
+      box.innerHTML = '<p class="wrong-note-empty">오답 노트를 불러오는 중...</p>';
+
+      const rows = await fetchWrongAnswers(30);
+      const items = rows
+        .map(r => ({ row: r, q: findQuestion(r.source, r.question_id) }))
+        .filter(x => x.q);
+
+      if (!items.length) {
+        box.innerHTML = `
+          <p class="wrong-note-empty">
+            아직 복습할 오답이 없어요.<br>
+            퀴즈나 기출변형을 풀면 틀린 문항이 여기에 모입니다.
+          </p>`;
+        if (retryBtn) retryBtn.style.display = 'none';
+        return;
+      }
+
+      box.innerHTML = items.map(({ row, q }) => {
+        const isExam = row.source === 'exam';
+        const label = isExam ? '기출변형' : '퀴즈';
+        const text = isExam ? q.title || q.question : q.question;
+        const href = isExam ? `exam.html#exam-card-${q.id}` : 'quiz.html';
+        return `
+          <a class="wrong-note-item" href="${href}">
+            <div class="wrong-note-meta">
+              <span class="wrong-note-tag ${isExam ? 'is-exam' : 'is-quiz'}">${label}</span>
+              <span class="wrong-note-count">${row.wrong_count}번 틀림</span>
+            </div>
+            <div class="wrong-note-text">${text}</div>
+          </a>`;
+      }).join('');
+
+      // 퀴즈 오답만 모아서 다시 풀 수 있게 준비합니다.
+      const quizIds = items.filter(x => x.row.source === 'quiz').map(x => x.q.id);
+      if (retryBtn) {
+        if (quizIds.length) {
+          retryBtn.style.display = 'inline-flex';
+          retryBtn.textContent = `🎯 퀴즈 오답 ${quizIds.length}문제 다시 풀기`;
+          retryBtn.onclick = () => {
+            sessionStorage.setItem(WRONG_RETRY_KEY, JSON.stringify(quizIds));
+            window.location.href = 'quiz.html?mode=wrong';
+          };
+        } else {
+          retryBtn.style.display = 'none';
+        }
       }
     }
 

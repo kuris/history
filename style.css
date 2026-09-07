@@ -2267,3 +2267,176 @@ button {
     width: 100%;
   }
 }
+
+/* ==================== 내 학습실 - 통계 카드 ==================== */
+.dash-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .dash-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dash-stat {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
+  text-align: center;
+  background: var(--color-subtle-bg);
+}
+
+.dash-stat-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-soft);
+  margin-bottom: 6px;
+}
+
+.dash-stat-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1.1;
+  color: var(--color-primary-dark);
+}
+
+.dash-stat-value span {
+  font-size: 13px;
+  margin-left: 2px;
+  opacity: 0.75;
+}
+
+.dash-stat-correct { background: #ECFDF5; border-color: #A7F3D0; }
+.dash-stat-correct .dash-stat-label { color: #065F46; }
+.dash-stat-correct .dash-stat-value { color: #059669; }
+
+.dash-stat-exam { background: #EFF6FF; border-color: #BFDBFE; }
+.dash-stat-exam .dash-stat-label { color: #1E40AF; }
+.dash-stat-exam .dash-stat-value { color: #2563EB; }
+
+.dash-stat-wrong { background: #FEF2F2; border-color: #FECACA; }
+.dash-stat-wrong .dash-stat-label { color: #991B1B; }
+.dash-stat-wrong .dash-stat-value { color: #DC2626; }
+
+/* ==================== 내 학습실 - 오답 노트 ==================== */
+.wrong-note-box {
+  background: #FFFFFF;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+.wrong-note-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--color-border-subtle);
+}
+
+.wrong-note-head h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wrong-note-retry {
+  background: var(--color-accent);
+  color: #FFFFFF;
+  border: none;
+  padding: 9px 18px;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(153, 27, 27, 0.22);
+  transition: all 0.2s ease;
+}
+
+.wrong-note-retry:hover {
+  background: #7F1D1D;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3);
+}
+
+#wrong-note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.wrong-note-item {
+  display: block;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border-subtle);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+}
+
+.wrong-note-item:hover {
+  background: #FFFDF7;
+  border-color: var(--color-border);
+  border-left-color: var(--color-accent);
+  transform: translateX(3px);
+}
+
+.wrong-note-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.wrong-note-tag {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+}
+
+.wrong-note-tag.is-exam {
+  background: #EFF6FF;
+  color: #1E40AF;
+}
+
+.wrong-note-tag.is-quiz {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.wrong-note-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.wrong-note-text {
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.wrong-note-empty {
+  font-size: 13.5px;
+  color: var(--color-text-soft);
+  line-height: 1.6;
+  text-align: center;
+  padding: 24px 8px;
+}

@@ -21,7 +21,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   
-  <link rel="stylesheet" href="/style.css?v=20260907_05">
+  <link rel="stylesheet" href="/style.css?v=20260907_06">
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3321070604000141" crossorigin="anonymous"></script>
@@ -147,9 +147,22 @@
         <p class="page-desc">지금까지 차곡차곡 쌓아온 역사 학습 현황입니다.</p>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 26px;" id="dash-stats-grid">
+      <div class="dash-stats-grid" id="dash-stats-grid">
         <!-- script.js에서 렌더링 -->
       </div>
+
+      <!-- 오답 노트 -->
+      <section class="wrong-note-box">
+        <div class="wrong-note-head">
+          <h3><i class="fa-solid fa-rotate-left"></i> 복습할 오답 노트</h3>
+          <button type="button" class="wrong-note-retry" id="wrong-retry-btn" style="display:none;">
+            🎯 퀴즈 오답 다시 풀기
+          </button>
+        </div>
+        <div id="wrong-note-list">
+          <p class="wrong-note-empty">오답 노트를 불러오는 중...</p>
+        </div>
+      </section>
 
       <div style="background: #FFFFFF; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 24px 20px; margin-bottom: 24px; text-align: center;">
         <h3 style="font-family: var(--font-display); font-size: 20px; color: var(--main-dark); margin-bottom: 8px;">계속 이어서 학습해 볼까요?</h3>
@@ -200,6 +213,6 @@
     </footer>
   </div>
 
-  <script src="/script.js?v=20260907_04"></script>
+  <script src="/script.js?v=20260907_06"></script>
 </body>
 </html>
