@@ -7,7 +7,7 @@
   'use strict';
 
   // ============================================================
-  // 1. 역사 데이터베이스 (한국사 60선 + 세계사 55선 + 지도 거점 22곳 + 기출 20제 + 퀴즈 35제)
+  // 1. 역사 데이터베이스
   // ============================================================
   const KOREA_EVENTS = [
   {
@@ -565,7 +565,9 @@
       "조선 건국",
       "태조 이성계",
       "한양 천도",
-      "성리학"
+      "성리학",
+      "한양",
+      "서울"
     ],
     "importance": 3,
     "examPoint": "과전법(1391년)을 통해 신진사대부의 경제적 기반을 먼저 다진 후 건국을 선포했습니다.",
@@ -1087,7 +1089,9 @@
       "신군부 퇴진",
       "계엄령 철폐",
       "시민군",
-      "유네스코 기록유산"
+      "유네스코 기록유산",
+      "광주",
+      "광주광역시"
     ],
     "importance": 3,
     "examPoint": "1980년대 이후 한국 민주화 운동의 가장 위대한 분수령이자 세계적인 인권 운동의 상징입니다.",
@@ -3475,13 +3479,18 @@
   }
 
   function cleanCallbackUrl() {
-    if (window.location.hash && (window.location.hash.includes('access_token=') || window.location.hash.includes('error='))) {
-      try {
-        const cleanUrl = window.location.pathname + window.location.search;
-        window.history.replaceState(null, document.title, cleanUrl);
-      } catch (e) {
-        console.warn('URL clean error:', e);
+    try {
+      if (window.location.hash && (window.location.hash.includes('access_token=') || window.location.hash.includes('refresh_token=') || window.location.hash.includes('error='))) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
+      if (window.location.search && window.location.search.includes('code=')) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('code');
+        const qs = url.searchParams.toString();
+        window.history.replaceState(null, '', url.pathname + (qs ? '?' + qs : '') + url.hash);
+      }
+    } catch (e) {
+      console.warn('URL clean error:', e);
     }
   }
 
@@ -3575,7 +3584,6 @@
       });
     }
 
-    // 헤더 로그인 텍스트
     const authStatusText = document.getElementById('auth-status-text');
     if (sbClient) {
       sbClient.auth.getSession().then(({ data }) => {
@@ -3616,7 +3624,6 @@
     const dateStr = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
     if (dateChip) dateChip.textContent = dateStr;
 
-    // 날짜 기반 결정론적 시드
     const seed = (now.getFullYear() * 10000) + ((now.getMonth() + 1) * 100) + now.getDate();
     const koreaIdx = seed % KOREA_EVENTS.length;
     const worldIdx = (seed * 7) % WORLD_EVENTS.length;
@@ -3795,35 +3802,36 @@
   }
 
   // ============================================================
-  // 8. timeline.html - 통합 검색 연표 + 연상 암기팁
+  // 8. timeline.html - 통합 검색 연표 (스마트 검색 & 파라미터 연동)
   // ============================================================
   function initTimelinePage() {
-    const listContainer = document.getElementById('timeline-list-container');
-    const searchInput = document.getElementById('timeline-search-input');
+    const listContainer = document.getElementById('timeline-list') || document.getElementById('timeline-list-container');
+    const searchInput = document.getElementById('timeline-search') || document.getElementById('timeline-search-input');
     const countBadge = document.getElementById('timeline-count-badge');
-    const filterBtns = document.querySelectorAll('.timeline-filter-btn');
+    const filterTabs = document.querySelectorAll('.filter-tab, .timeline-filter-btn');
 
     if (!listContainer) return;
 
     const urlParams = new URLSearchParams(window.location.search);
-    let currentFilter = urlParams.get('type') || 'all';
+    let currentFilter = urlParams.get('type') || urlParams.get('filter') || 'all';
     let searchQuery = urlParams.get('q') || '';
 
     if (searchInput && searchQuery) {
       searchInput.value = searchQuery;
     }
 
-    if (filterBtns) {
-      filterBtns.forEach(btn => {
-        if (btn.getAttribute('data-type') === currentFilter) {
+    if (filterTabs.length > 0) {
+      filterTabs.forEach(btn => {
+        const val = btn.getAttribute('data-filter') || btn.getAttribute('data-type');
+        if (val === currentFilter) {
           btn.classList.add('active');
         } else {
           btn.classList.remove('active');
         }
         btn.addEventListener('click', () => {
-          filterBtns.forEach(b => b.classList.remove('active'));
+          filterTabs.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          currentFilter = btn.getAttribute('data-type');
+          currentFilter = btn.getAttribute('data-filter') || btn.getAttribute('data-type');
           renderTimeline();
         });
       });
@@ -3831,9 +3839,25 @@
 
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        searchQuery = e.target.value.trim().toLowerCase();
+        searchQuery = e.target.value.trim();
         renderTimeline();
       });
+    }
+
+    function getSearchTerms(query) {
+      const q = query.toLowerCase();
+      const terms = [q];
+      const stripped = q.replace(/특별시|광역시|특별자치시|특별자치도|시$|도$|군$|구$/g, '');
+      if (stripped && stripped !== q) terms.push(stripped);
+      if (stripped === '광주') terms.push('5·18', '518', '광주학생');
+      if (stripped === '서울' || stripped === '한양') terms.push('한양', '한성', '서울');
+      if (stripped === '경주') terms.push('서라벌', '금성', '신라');
+      if (stripped === '평양') terms.push('왕검성', '서경');
+      if (stripped === '공주') terms.push('웅진');
+      if (stripped === '부여') terms.push('사비');
+      if (stripped === '개성') terms.push('개경', '송악');
+      if (stripped === '완도') terms.push('청해진', '장보고');
+      return terms;
     }
 
     function renderTimeline() {
@@ -3846,13 +3870,19 @@
       }
 
       if (searchQuery) {
+        const terms = getSearchTerms(searchQuery);
         filtered = filtered.filter(e => {
-          return e.title.toLowerCase().includes(searchQuery) ||
-                 e.summary.toLowerCase().includes(searchQuery) ||
-                 e.period.toLowerCase().includes(searchQuery) ||
-                 e.yearDisplay.toLowerCase().includes(searchQuery) ||
-                 (e.mnemonic && e.mnemonic.toLowerCase().includes(searchQuery)) ||
-                 (e.keywords && e.keywords.some(k => k.toLowerCase().includes(searchQuery)));
+          const contentStr = (
+            e.title + ' ' +
+            e.summary + ' ' +
+            e.period + ' ' +
+            e.yearDisplay + ' ' +
+            (e.mnemonic || '') + ' ' +
+            (e.examPoint || '') + ' ' +
+            (e.keywords || []).join(' ')
+          ).toLowerCase();
+
+          return terms.some(t => contentStr.includes(t));
         });
       }
 
@@ -3860,9 +3890,10 @@
 
       if (filtered.length === 0) {
         listContainer.innerHTML = `
-          <div style="text-align:center; padding: 40px 20px; color: var(--color-text-soft);">
-            <div style="font-size: 32px; margin-bottom: 10px;">🔍</div>
-            검색 결과가 없습니다. 다른 검색어를 입력해 보세요.
+          <div style="text-align:center; padding: 40px 20px; color: var(--color-text-soft); background:#fff; border-radius:16px; border:1.5px solid var(--color-border); margin:20px 0;">
+            <div style="font-size: 36px; margin-bottom: 10px;">🔍</div>
+            <h4 style="font-family:var(--font-display); color:var(--color-primary-dark); margin-bottom:6px;">검색 결과가 없습니다</h4>
+            <p style="font-size:14px;">'${searchQuery}'에 대한 사건을 찾을 수 없습니다. 다른 키워드(예: 5·18, 임진왜란, 조선, 1919)를 입력해 보세요.</p>
           </div>
         `;
         return;
@@ -3904,7 +3935,7 @@
   }
 
   // ============================================================
-  // 9. map.html - 지도에서 보는 역사 (인터랙티브 SVG 지도 & 거점 탐색)
+  // 9. map.html - 지도에서 보는 역사
   // ============================================================
   function initMapPage() {
     const viewport = document.getElementById('map-viewport');
@@ -3924,11 +3955,10 @@
 
     if (!viewport) return;
 
-    let currentMapType = 'korea'; // 'korea' or 'world'
+    let currentMapType = 'korea';
     let selectedLocId = null;
     let mapQuery = '';
 
-    // 한반도 배경 SVG
     const KOREA_SVG = `
       <svg class="map-svg-bg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -3943,41 +3973,13 @@
         <rect width="100" height="100" fill="url(#parchmentGrad)"/>
         <rect width="100" height="100" fill="url(#gridPattern)"/>
         
-        <!-- 바다 물결 선 -->
-        <path d="M 5 25 Q 15 22 25 25 T 45 25" fill="none" stroke="rgba(180, 83, 9, 0.12)" stroke-width="0.6"/>
-        <path d="M 65 35 Q 75 32 85 35 T 95 35" fill="none" stroke="rgba(180, 83, 9, 0.12)" stroke-width="0.6"/>
-        <path d="M 10 65 Q 20 62 30 65 T 50 65" fill="none" stroke="rgba(180, 83, 9, 0.12)" stroke-width="0.6"/>
-        <path d="M 60 75 Q 70 72 80 75 T 95 75" fill="none" stroke="rgba(180, 83, 9, 0.12)" stroke-width="0.6"/>
+        <path d="M 30 10 L 65 10 L 80 18 L 70 30 L 62 42 L 72 58 L 74 72 L 55 86 L 32 84 L 28 72 L 40 58 L 35 44 L 26 30 Z"
+          fill="#FFF9ED" stroke="#D97706" stroke-width="1.2" filter="drop-shadow(0 2px 4px rgba(120,53,15,0.08))" />
 
-        <!-- 한반도 윤곽선 (고지도 양피지 스타일) -->
-        <path d="
-          M 30 10
-          L 65 10
-          L 80 18
-          L 70 30
-          L 62 42
-          L 72 58
-          L 74 72
-          L 55 86
-          L 32 84
-          L 28 72
-          L 40 58
-          L 35 44
-          L 26 30
-          Z"
-          fill="#FFF9ED" stroke="#D97706" stroke-width="1.2" stroke-dasharray="none" filter="drop-shadow(0 2px 4px rgba(120,53,15,0.08))" />
-
-        <!-- 제주도, 울릉도/독도 -->
         <ellipse cx="32" cy="93" rx="4" ry="2" fill="#FFF9ED" stroke="#D97706" stroke-width="0.8"/>
         <circle cx="84" cy="54" r="1.5" fill="#FFF9ED" stroke="#D97706" stroke-width="0.8"/>
         <circle cx="89" cy="55" r="1.0" fill="#FFF9ED" stroke="#D97706" stroke-width="0.8"/>
 
-        <!-- 주요 강 (압록강, 한강, 낙동강 느낌선) -->
-        <path d="M 32 12 Q 50 8 75 14" fill="none" stroke="#FBBF24" stroke-width="0.8"/>
-        <path d="M 39 46 Q 50 48 58 45" fill="none" stroke="#FBBF24" stroke-width="0.8"/>
-        <path d="M 64 65 Q 66 76 60 82" fill="none" stroke="#FBBF24" stroke-width="0.8"/>
-
-        <!-- 지명 레이블 (워터마크) -->
         <text x="12" y="45" font-family="'Noto Serif KR', serif" font-size="4" fill="rgba(120,53,15,0.22)" font-weight="700">黃海 (서해)</text>
         <text x="78" y="45" font-family="'Noto Serif KR', serif" font-size="4" fill="rgba(120,53,15,0.22)" font-weight="700">東海 (동해)</text>
         <text x="44" y="96" font-family="'Noto Serif KR', serif" font-size="3.5" fill="rgba(120,53,15,0.22)" font-weight="700">南海 (남해)</text>
@@ -3985,7 +3987,6 @@
       </svg>
     `;
 
-    // 세계 지도 배경 SVG
     const WORLD_SVG = `
       <svg class="map-svg-bg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -3996,31 +3997,20 @@
         </defs>
         <rect width="100" height="100" fill="url(#worldParchment)"/>
         
-        <!-- 대륙 실루엣 간략화 (유라시아, 아프리카, 아메리카) -->
-        <!-- 아메리카 -->
         <path d="M 12 18 L 26 22 L 28 42 L 20 52 L 22 75 L 30 90 L 18 85 L 14 60 L 10 40 Z" fill="#FFF9ED" stroke="#D97706" stroke-width="0.8"/>
-        <!-- 유럽 & 아시아 (유라시아) -->
         <path d="M 44 20 L 58 18 L 88 22 L 95 38 L 82 55 L 70 52 L 62 40 L 48 38 L 42 26 Z" fill="#FFF9ED" stroke="#D97706" stroke-width="0.8"/>
-        <!-- 아프리카 -->
         <path d="M 48 42 L 62 44 L 64 68 L 56 86 L 46 64 Z" fill="#FFF9ED" stroke="#D97706" stroke-width="0.8"/>
 
-        <!-- 지중해 & 실크로드 라인 -->
-        <path d="M 48 36 Q 53 37 56 36" fill="none" stroke="#3B82F6" stroke-width="0.8"/>
-        <path d="M 58 40 Q 68 38 78 39" fill="none" stroke="#D97706" stroke-width="0.8" stroke-dasharray="1 1"/>
-
-        <!-- 레이블 워터마크 -->
         <text x="46" y="24" font-family="'Noto Serif KR', serif" font-size="3" fill="rgba(120,53,15,0.25)">EUROPE</text>
         <text x="74" y="32" font-family="'Noto Serif KR', serif" font-size="3.5" fill="rgba(120,53,15,0.25)">ASIA</text>
-        <text x="50" y="58" font-family="'Noto Serif KR', serif" font-size="3" fill="rgba(120,53,15,0.25)">AFRICA</text>
-        <text x="16" y="36" font-family="'Noto Serif KR', serif" font-size="3" fill="rgba(120,53,15,0.25)">AMERICA</text>
+        <text x="50" y="58" font-family="'Noto Serif KR', serif" font-size="3.5" fill="rgba(120,53,15,0.25)">AFRICA</text>
+        <text x="16" y="36" font-family="'Noto Serif KR', serif" font-size="3.5" fill="rgba(120,53,15,0.25)">AMERICA</text>
       </svg>
     `;
 
     function renderMap() {
-      // 1. 배경 SVG 주입
       viewport.innerHTML = currentMapType === 'korea' ? KOREA_SVG : WORLD_SVG;
 
-      // 2. 해당 유형의 장소 필터
       let locs = MAP_LOCATIONS.filter(loc => loc.type === currentMapType);
       if (mapQuery) {
         locs = locs.filter(loc => {
@@ -4031,7 +4021,6 @@
         });
       }
 
-      // 3. 핀 마커 DOM 배치
       locs.forEach(loc => {
         const marker = document.createElement('div');
         marker.className = `map-marker ${selectedLocId === loc.id ? 'active' : ''}`;
@@ -4053,7 +4042,6 @@
         viewport.appendChild(marker);
       });
 
-      // 4. 하단 빠른 거점 칩 목록 렌더링
       chipsContainer.innerHTML = '';
       locs.forEach(loc => {
         const chip = document.createElement('button');
@@ -4072,7 +4060,6 @@
       const loc = MAP_LOCATIONS.find(l => l.id === id);
       if (!loc) return;
 
-      // 지도 핀 active 토글
       document.querySelectorAll('.map-marker').forEach(m => {
         if (m.getAttribute('data-id') === id) {
           m.classList.add('active');
@@ -4081,7 +4068,6 @@
         }
       });
 
-      // 칩 active 토글
       document.querySelectorAll('.map-location-chip').forEach(c => {
         if (c.textContent === loc.name) {
           c.classList.add('active');
@@ -4090,7 +4076,6 @@
         }
       });
 
-      // 상세 카드 갱신
       detailEmpty.style.display = 'none';
       detailContent.style.display = 'block';
 
@@ -4102,12 +4087,11 @@
       detailEventsList.innerHTML = loc.keyEvents.map(e => `<li>${e}</li>`).join('');
       detailMnemonic.textContent = loc.mnemonic || '핵심 사건의 전후 인과관계를 기억해 보세요!';
 
-      const firstKw = loc.name.split(' ')[0];
-      detailLink.href = `timeline.html?type=${loc.type}&q=${encodeURIComponent(firstKw)}`;
-      detailLink.textContent = `${firstKw} 관련 전체 사건 연표 보기 →`;
+      const searchKeyword = loc.name.split(' ')[0].replace(/특별시|광역시|특별자치시/, '');
+      detailLink.href = `timeline.html?type=${loc.type}&q=${encodeURIComponent(searchKeyword)}`;
+      detailLink.textContent = `${searchKeyword} 관련 전체 사건 연표 보기 →`;
     }
 
-    // 탭 전환 이벤트
     tabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         tabBtns.forEach(b => b.classList.remove('active'));
@@ -4117,7 +4101,6 @@
           ? '<i class="fa-solid fa-map-location-dot"></i> 한반도 주요 역사 거점 (12곳)'
           : '<i class="fa-solid fa-earth-americas"></i> 세계사 문명 & 격전지 (10곳)';
 
-        // 새 탭의 첫 번째 거점 자동 선택
         const first = MAP_LOCATIONS.find(l => l.type === currentMapType);
         selectedLocId = first ? first.id : null;
         renderMap();
@@ -4125,7 +4108,6 @@
       });
     });
 
-    // 검색 입력 이벤트
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         mapQuery = e.target.value.trim().toLowerCase();
@@ -4133,7 +4115,6 @@
       });
     }
 
-    // 초기 렌더링
     const firstLoc = MAP_LOCATIONS.find(l => l.type === currentMapType);
     if (firstLoc) {
       selectedLocId = firstLoc.id;
@@ -4145,48 +4126,60 @@
   }
 
   // ============================================================
-  // 10. exam.html - 기출변형 20제 풀기
+  // 10. exam.html - 기출변형 20제 풀기 (정확한 choices 및 해설)
   // ============================================================
   function initExamPage() {
-    const listContainer = document.getElementById('exam-list-wrap');
-    const gradeFilter = document.getElementById('exam-grade-filter');
-    const typeFilter = document.getElementById('exam-type-filter');
+    const listContainer = document.getElementById('exam-questions-list') || document.getElementById('exam-list-wrap');
+    const filterTabs = document.querySelectorAll('.exam-tab-group .filter-tab');
 
     if (!listContainer) return;
 
-    let currentGrade = 'all';
-    let currentType = 'all';
+    let currentFilter = 'all';
+
+    if (filterTabs.length > 0) {
+      filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          filterTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentFilter = tab.getAttribute('data-filter') || 'all';
+          renderExams();
+        });
+      });
+    }
 
     function renderExams() {
       let filtered = EXAM_QUESTIONS;
-      if (currentGrade !== 'all') filtered = filtered.filter(q => q.grade === currentGrade);
-      if (currentType !== 'all') filtered = filtered.filter(q => q.type === currentType);
+      if (currentFilter === 'korea') filtered = filtered.filter(q => q.type === 'korea');
+      if (currentFilter === 'world') filtered = filtered.filter(q => q.type === 'world');
 
       listContainer.innerHTML = '';
-      filtered.forEach(q => {
+      filtered.forEach((q, qIndex) => {
         const card = document.createElement('article');
         card.className = 'exam-card';
         card.id = `exam-card-${q.id}`;
 
-        const optionsHtml = q.options.map((opt, i) => `
-          <label class="exam-option-label" data-idx="${i}">
-            <input type="radio" name="opt-${q.id}" value="${i}">
+        const choicesList = q.choices || [];
+        const optionsHtml = choicesList.map((opt, i) => `
+          <label class="exam-option-label" data-idx="${i + 1}" style="display:flex; align-items:center; gap:8px; padding:10px 14px; border:1.5px solid var(--color-border); border-radius:10px; margin-bottom:8px; cursor:pointer; background:#fff; transition:all 0.2s ease;">
+            <input type="radio" name="opt-${q.id}" value="${i + 1}">
             <span>${i + 1}. ${opt}</span>
           </label>
         `).join('');
 
+        const wrongNotes = (q.wrongExplanations || []).map(w => `<div>• ${w}</div>`).join('');
+
         card.innerHTML = `
-          <div class="exam-card-header">
+          <div class="exam-card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <div>
-              <span class="exam-badge">${q.grade} 대비</span>
-              <span class="exam-period-tag">[${q.period}]</span>
+              <span class="exam-badge" style="background:#FEF3C7; color:#92400E; font-size:12px; font-weight:800; padding:3px 10px; border-radius:999px;">${q.type === 'korea' ? '한국사' : '세계사'} 기출변형</span>
+              <span class="exam-period-tag" style="font-size:12.5px; color:var(--color-text-soft); font-weight:700; margin-left:6px;">[${q.topic || q.title}]</span>
             </div>
-            <span style="font-size:12px; color:var(--color-point); font-weight:700;">출제 빈도 ★★★</span>
+            <span style="font-size:12px; color:var(--color-point); font-weight:700;">난이도: ${q.difficulty || '★★★'}</span>
           </div>
 
-          <h3 class="exam-question-text">${q.id.replace('ex-', '')}번. ${q.question}</h3>
+          <h3 class="exam-question-text" style="font-family:var(--font-display); font-size:1.15rem; color:var(--color-primary-dark); margin-bottom:10px;">${qIndex + 1}번. ${q.question}</h3>
 
-          <div class="exam-passage">
+          <div class="exam-passage" style="background:var(--color-subtle-bg); border:1.5px solid var(--color-border-subtle); padding:14px; border-radius:10px; margin-bottom:14px; font-size:14px; line-height:1.6;">
             ${q.passage}
           </div>
 
@@ -4194,18 +4187,17 @@
             ${optionsHtml}
           </div>
 
-          <div class="exam-btn-row">
-            <button type="button" class="cta-btn exam-submit-btn" style="padding:8px 18px; font-size:13.5px; border-radius:999px;">정답 및 해설 확인</button>
+          <div class="exam-btn-row" style="margin-top:14px;">
+            <button type="button" class="cta-btn exam-submit-btn" style="padding:8px 20px; font-size:13.5px; border-radius:999px;">정답 및 해설 확인</button>
           </div>
 
-          <div class="exam-solution" style="display:none;">
-            <div class="solution-header">
-              <span class="solution-correct-tag">정답: ${q.answer + 1}번</span>
+          <div class="exam-solution" style="display:none; margin-top:16px; background:#F0FDF4; border:1.5px solid #BBF7D0; padding:16px; border-radius:12px;">
+            <div class="solution-header" style="margin-bottom:8px;">
+              <span class="solution-correct-tag" style="font-weight:800; color:#15803D; font-size:15px;">✓ 정답: ${q.answer}번 (${choicesList[q.answer - 1] || ''})</span>
             </div>
-            <p class="solution-text">${q.solution}</p>
-            <div class="solution-point">
-              <strong>핵심 출제 포인트</strong>: ${q.point}
-            </div>
+            <p class="solution-text" style="font-size:13.5px; color:#1F2937; line-height:1.6; margin-bottom:10px;">${q.explanation}</p>
+            ${wrongNotes ? `<div style="font-size:12.5px; color:#4B5563; background:#fff; padding:10px; border-radius:8px; border:1px solid #D1D5DB; margin-bottom:10px;"><strong>오답 선지 정리:</strong>${wrongNotes}</div>` : ''}
+            ${q.timelineFlow ? `<div style="font-size:12.5px; color:#92400E; background:#FEF3C7; padding:8px 12px; border-radius:8px;"><strong>흐름 정리:</strong> ${q.timelineFlow}</div>` : ''}
           </div>
         `;
 
@@ -4223,7 +4215,8 @@
           solutionBox.style.display = 'block';
           submitBtn.style.display = 'none';
 
-          labels.forEach((lbl, idx) => {
+          labels.forEach(lbl => {
+            const idx = parseInt(lbl.getAttribute('data-idx'), 10);
             if (idx === q.answer) {
               lbl.style.background = '#ECFDF5';
               lbl.style.borderColor = '#10B981';
@@ -4234,7 +4227,6 @@
             }
           });
 
-          // 유저 통계 업데이트
           const stats = getUserStats();
           stats.examSolvedCount = (stats.examSolvedCount || 0) + 1;
           saveUserStats(stats);
@@ -4244,129 +4236,136 @@
       });
     }
 
-    if (gradeFilter) {
-      gradeFilter.addEventListener('change', (e) => {
-        currentGrade = e.target.value;
-        renderExams();
-      });
-    }
-
-    if (typeFilter) {
-      typeFilter.addEventListener('change', (e) => {
-        currentType = e.target.value;
-        renderExams();
-      });
-    }
-
     renderExams();
   }
 
   // ============================================================
-  // 11. print.html - 연표 암기 프린트 학습지 생성기
+  // 11. print.html - 연표 암기 프린트 (문항수, 범위, 유형 실시간 연동)
   // ============================================================
   function initPrintPage() {
-    const scopePills = document.querySelectorAll('[data-scope]');
-    const typePills = document.querySelectorAll('[data-qtype]');
-    const countPills = document.querySelectorAll('[data-count]');
-    const formatPills = document.querySelectorAll('[data-format]');
-    const generateBtn = document.getElementById('generate-print-btn');
-    const previewContainer = document.getElementById('print-preview-content');
+    const previewContainer = document.getElementById('worksheet-preview') || document.getElementById('print-preview-content');
+    const generateBtn = document.getElementById('btn-build-worksheet') || document.getElementById('generate-print-btn');
+    const executePrintBtn = document.getElementById('btn-execute-print');
 
     if (!previewContainer) return;
 
     let selScope = 'korea-all';
     let selQType = 'year-blank';
     let selCount = 10;
-    let selFormat = 'with-answers';
+    let selFormat = 'both';
 
-    function setupPillGroup(pills, onChange) {
-      pills.forEach(pill => {
-        pill.addEventListener('click', () => {
-          pills.forEach(p => p.classList.remove('active'));
-          pill.classList.add('active');
-          onChange(pill);
+    function setupPillGroup(groupId, onChange) {
+      const group = document.getElementById(groupId);
+      if (!group) return;
+      const btns = group.querySelectorAll('.pill-radio');
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          btns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const val = btn.getAttribute('data-val');
+          onChange(val);
         });
       });
     }
 
-    setupPillGroup(scopePills, p => selScope = p.getAttribute('data-scope'));
-    setupPillGroup(typePills, p => selQType = p.getAttribute('data-qtype'));
-    setupPillGroup(countPills, p => selCount = parseInt(p.getAttribute('data-count'), 10));
-    setupPillGroup(formatPills, p => selFormat = p.getAttribute('data-format'));
+    setupPillGroup('scope-group', val => { selScope = val; generateWorksheet(); });
+    setupPillGroup('type-group', val => { selQType = val; generateWorksheet(); });
+    setupPillGroup('count-group', val => { selCount = parseInt(val, 10); generateWorksheet(); });
+    setupPillGroup('format-group', val => { selFormat = val; generateWorksheet(); });
 
-    function generateWorksheet(scope, qType, count, format) {
+    if (executePrintBtn) {
+      executePrintBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    function generateWorksheet() {
       let pool = ALL_EVENTS;
 
-      if (scope === 'korea-all') pool = KOREA_EVENTS;
-      else if (scope === 'world-all') pool = WORLD_EVENTS;
-      else if (scope === 'korea-modern') pool = KOREA_EVENTS.filter(e => e.period === '근대' || e.period === '일제강점기' || e.period === '현대');
-      else if (scope === 'korea-joseon') pool = KOREA_EVENTS.filter(e => e.period.includes('조선'));
-      else if (scope === 'world-revolution') pool = WORLD_EVENTS.filter(e => e.period === '시민혁명' || e.period === '산업혁명');
+      if (selScope === 'korea-all') pool = KOREA_EVENTS;
+      else if (selScope === 'world-all') pool = WORLD_EVENTS;
+      else if (selScope === 'korea-modern') pool = KOREA_EVENTS.filter(e => e.period === '근대' || e.period === '일제강점기' || e.period === '현대');
+      else if (selScope === 'korea-joseon') pool = KOREA_EVENTS.filter(e => e.period.includes('조선'));
+      else if (selScope === 'world-revolution') pool = WORLD_EVENTS.filter(e => e.period === '시민혁명' || e.period === '산업혁명');
 
-      const shuffled = [...pool].sort(() => 0.5 - Math.random()).slice(0, count);
+      const shuffled = [...pool].sort(() => 0.5 - Math.random()).slice(0, selCount);
 
       let questionsHtml = '';
       let answersHtml = '';
 
+      const scopeLabels = {
+        'korea-all': '한국사 전체',
+        'world-all': '세계사 전체',
+        'korea-modern': '한국 근현대사',
+        'korea-joseon': '조선 시대',
+        'world-revolution': '세계 시민혁명·산업혁명'
+      };
+
+      const qTypeLabels = {
+        'year-blank': '연도 쓰기 (사건 보고 연도 맞히기)',
+        'event-blank': '사건 쓰기 (연도·설명 보고 사건 맞히기)',
+        'keyword-match': '키워드 연결 (핵심 개념 맞히기)'
+      };
+
       shuffled.forEach((item, idx) => {
         const num = idx + 1;
-        if (qType === 'year-blank') {
+        if (selQType === 'year-blank') {
           questionsHtml += `
-            <div class="worksheet-item">
+            <div class="worksheet-item" style="margin-bottom:16px; font-size:14.5px; line-height:1.65; padding:10px 14px; background:#FAFAF9; border-radius:8px; border:1px solid #E7E5E4;">
               <strong>${num}.</strong> [${item.period}] <strong>${item.title}</strong>은(는) 몇 년도에 일어났을까요?<br>
-              &nbsp;&nbsp;&nbsp;&nbsp;→ 정답: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )
+              <div style="margin-top:6px; color:#57534E;">&nbsp;&nbsp;&nbsp;&nbsp;→ 정답: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
             </div>
           `;
-          answersHtml += `<div><strong>${num}번:</strong> ${item.yearDisplay} - ${item.title} ${item.mnemonic ? `<span class="print-mnemonic-text">[💡 암기팁: ${item.mnemonic}]</span>` : ''}</div>`;
-        } else if (qType === 'event-blank') {
+          answersHtml += `<div style="margin-bottom:6px;"><strong>${num}번:</strong> ${item.yearDisplay} - ${item.title} ${item.mnemonic ? `<span class="print-mnemonic-text" style="color:#92400E; font-weight:700;">[💡 ${item.mnemonic}]</span>` : ''}</div>`;
+        } else if (selQType === 'event-blank') {
           questionsHtml += `
-            <div class="worksheet-item">
+            <div class="worksheet-item" style="margin-bottom:16px; font-size:14.5px; line-height:1.65; padding:10px 14px; background:#FAFAF9; border-radius:8px; border:1px solid #E7E5E4;">
               <strong>${num}.</strong> [${item.yearDisplay}] ${item.summary}<br>
-              &nbsp;&nbsp;&nbsp;&nbsp;→ 해당 사건 또는 제도의 명칭은?: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )
+              <div style="margin-top:6px; color:#57534E;">&nbsp;&nbsp;&nbsp;&nbsp;→ 해당 사건 또는 제도의 명칭은?: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
             </div>
           `;
-          answersHtml += `<div><strong>${num}번:</strong> ${item.title} (${item.yearDisplay}) ${item.mnemonic ? `<span class="print-mnemonic-text">[💡 암기팁: ${item.mnemonic}]</span>` : ''}</div>`;
+          answersHtml += `<div style="margin-bottom:6px;"><strong>${num}번:</strong> ${item.title} (${item.yearDisplay}) ${item.mnemonic ? `<span class="print-mnemonic-text" style="color:#92400E; font-weight:700;">[💡 ${item.mnemonic}]</span>` : ''}</div>`;
         } else {
           const kw = item.keywords?.[0] || item.period;
           questionsHtml += `
-            <div class="worksheet-item">
+            <div class="worksheet-item" style="margin-bottom:16px; font-size:14.5px; line-height:1.65; padding:10px 14px; background:#FAFAF9; border-radius:8px; border:1px solid #E7E5E4;">
               <strong>${num}.</strong> 키워드 [ <strong>${kw}</strong> ]와(과) 가장 밀접한 역사적 사건은?<br>
-              &nbsp;&nbsp;&nbsp;&nbsp;→ 정답: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )
+              <div style="margin-top:6px; color:#57534E;">&nbsp;&nbsp;&nbsp;&nbsp;→ 정답: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
             </div>
           `;
-          answersHtml += `<div><strong>${num}번:</strong> ${item.title} [${kw}] ${item.mnemonic ? `<span class="print-mnemonic-text">[💡 암기팁: ${item.mnemonic}]</span>` : ''}</div>`;
+          answersHtml += `<div style="margin-bottom:6px;"><strong>${num}번:</strong> ${item.title} [${kw}] ${item.mnemonic ? `<span class="print-mnemonic-text" style="color:#92400E; font-weight:700;">[💡 ${item.mnemonic}]</span>` : ''}</div>`;
         }
       });
 
       const todayStr = new Date().toLocaleDateString('ko-KR');
 
       let finalHtml = `
-        <div class="worksheet-header">
+        <div class="worksheet-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:2.5px solid #78350F; padding-bottom:14px; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
           <div>
-            <div class="worksheet-title">📜 역사야 놀자 - 연표 암기 핵심 학습지</div>
-            <div style="font-size: 13px; color: #4B5563; margin-top: 4px;">출제 범위: ${scope} · 문항수: ${count}문항 · 유형: ${qType}</div>
+            <div class="worksheet-title" style="font-family:var(--font-display); font-size:24px; color:#78350F;">📜 역사야 놀자 - 연표 암기 핵심 학습지</div>
+            <div style="font-size: 13.5px; color: #4B5563; margin-top: 4px;">출제 범위: <strong>${scopeLabels[selScope] || selScope}</strong> · 문항수: <strong>${selCount}문항</strong> · 유형: <strong>${qTypeLabels[selQType] || selQType}</strong></div>
           </div>
-          <div class="worksheet-score-box">
+          <div class="worksheet-score-box" style="display:flex; gap:14px; font-size:13.5px; font-weight:700; color:#374151;">
             <span>날짜: <u>${todayStr}</u></span>
             <span>이름: <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></span>
-            <span>점수: <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> / ${count}</span>
+            <span>점수: <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> / ${selCount}</span>
           </div>
         </div>
       `;
 
-      if (format !== 'answers-only') {
+      if (selFormat !== 'answers-only') {
         finalHtml += `
-          <div class="worksheet-body">
+          <div class="worksheet-body" style="background:#fff; padding:6px 0;">
             ${questionsHtml}
           </div>
         `;
       }
 
-      if (format === 'with-answers' || format === 'answers-only') {
+      if (selFormat === 'both' || selFormat === 'with-answers' || selFormat === 'answers-only') {
         finalHtml += `
-          <div class="worksheet-answers">
-            <h4 style="font-size: 14px; margin-bottom: 8px; color: #92400E; border-bottom: 1px dashed #FDE68A; padding-bottom: 4px;">[정답 및 암기팁 해설]</h4>
-            <div style="display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 12.5px; line-height: 1.5;">
+          <div class="worksheet-answers" style="margin-top:24px; padding-top:16px; border-top:2px dashed #FDE68A; background:#FFFBEB; padding:18px; border-radius:12px;">
+            <h4 style="font-family:var(--font-display); font-size: 16.5px; margin-bottom: 12px; color: #92400E;">[정답 및 연상 암기팁 해설]</h4>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 13.5px; line-height: 1.55;">
               ${answersHtml}
             </div>
           </div>
@@ -4374,46 +4373,64 @@
       }
 
       previewContainer.innerHTML = finalHtml;
-      showToast('새 학습지가 생성되었습니다! 인쇄 버튼을 눌러보세요.');
     }
 
     if (generateBtn) {
       generateBtn.addEventListener('click', () => {
-        generateWorksheet(selScope, selQType, selCount, selFormat);
+        generateWorksheet();
+        showToast('새 학습지가 생성되었습니다!');
       });
     }
 
-    generateWorksheet(selScope, selQType, selCount, selFormat);
+    generateWorksheet();
   }
 
   // ============================================================
-  // 12. quiz.html - 4지선다 역사 퀴즈
+  // 12. quiz.html - 4지선다 역사 퀴즈 (choices & explain 완벽 연동)
   // ============================================================
   function initQuizPage() {
-    const questionCard = document.getElementById('quiz-question-card');
+    const questionCard = document.getElementById('quiz-stage-section') || document.getElementById('quiz-question-card');
     const resultCard = document.getElementById('quiz-result-card');
     const progressBar = document.getElementById('quiz-progress-bar');
     const currentNumEl = document.getElementById('quiz-current-num');
-    const qCategoryEl = document.getElementById('quiz-category');
-    const qTextEl = document.getElementById('quiz-question-text');
-    const optionsContainer = document.getElementById('quiz-options-container');
-    const feedbackBox = document.getElementById('quiz-feedback-box');
-    const nextBtn = document.getElementById('quiz-next-btn');
+    const totalNumEl = document.getElementById('quiz-total-num');
+    const qTextEl = document.getElementById('quiz-question') || document.getElementById('quiz-question-text');
+    const optionsContainer = document.getElementById('quiz-choices') || document.getElementById('quiz-options-container');
+    const feedbackBox = document.getElementById('quiz-feedback') || document.getElementById('quiz-feedback-box');
+    const nextBtn = document.getElementById('btn-quiz-next') || document.getElementById('quiz-next-btn');
     const finalScoreEl = document.getElementById('quiz-final-score');
-    const restartBtn = document.getElementById('quiz-restart-btn');
+    const restartBtn = document.getElementById('btn-quiz-restart') || document.getElementById('quiz-restart-btn');
+    const filterTabs = document.querySelectorAll('.quiz-filter-group .filter-tab');
 
     if (!questionCard) return;
 
     let sessionQuestions = [];
     let currentIndex = 0;
     let score = 0;
+    let quizType = 'all';
+
+    if (filterTabs.length > 0) {
+      filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          filterTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          quizType = tab.getAttribute('data-type') || 'all';
+          startSession();
+        });
+      });
+    }
 
     function startSession() {
-      sessionQuestions = [...QUIZ_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 10);
+      let pool = QUIZ_QUESTIONS;
+      if (quizType === 'korea') pool = QUIZ_QUESTIONS.filter(q => q.type === 'korea');
+      if (quizType === 'world') pool = QUIZ_QUESTIONS.filter(q => q.type === 'world');
+
+      sessionQuestions = [...pool].sort(() => 0.5 - Math.random()).slice(0, 10);
       currentIndex = 0;
       score = 0;
       if (questionCard) questionCard.style.display = 'block';
       if (resultCard) resultCard.style.display = 'none';
+      if (totalNumEl) totalNumEl.textContent = sessionQuestions.length;
       renderCurrentQuestion();
     }
 
@@ -4424,20 +4441,24 @@
       }
 
       const q = sessionQuestions[currentIndex];
-      if (currentNumEl) currentNumEl.textContent = `${currentIndex + 1} / ${sessionQuestions.length}`;
-      if (progressBar) progressBar.style.width = `${(currentIndex / sessionQuestions.length) * 100}%`;
-      if (qCategoryEl) qCategoryEl.textContent = q.category;
-      if (qTextEl) qTextEl.textContent = q.question;
+      if (currentNumEl) currentNumEl.textContent = currentIndex + 1;
+      if (progressBar) progressBar.style.width = `${((currentIndex) / sessionQuestions.length) * 100}%`;
+      if (qTextEl) qTextEl.textContent = `[${q.category}] ${q.question}`;
 
-      if (feedbackBox) feedbackBox.style.display = 'none';
+      if (feedbackBox) {
+        feedbackBox.style.display = 'none';
+        feedbackBox.innerHTML = '';
+      }
       if (nextBtn) nextBtn.style.display = 'none';
 
       if (optionsContainer) {
         optionsContainer.innerHTML = '';
-        q.options.forEach((opt, idx) => {
+        const choices = q.choices || [];
+        choices.forEach((opt, idx) => {
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = 'quiz-option-btn';
+          btn.className = 'choice-btn';
+          btn.style.cssText = 'padding:14px 18px; border:2px solid var(--color-border); border-radius:14px; background:#fff; font-size:15px; font-weight:700; color:var(--color-text); text-align:left; cursor:pointer; transition:all 0.2s ease; box-shadow:var(--shadow-sm);';
           btn.textContent = `${idx + 1}. ${opt}`;
           btn.addEventListener('click', () => handleChoice(idx, q));
           optionsContainer.appendChild(btn);
@@ -4446,13 +4467,18 @@
     }
 
     function handleChoice(chosenIdx, q) {
-      const btns = optionsContainer.querySelectorAll('.quiz-option-btn');
+      const btns = optionsContainer.querySelectorAll('button');
       btns.forEach((btn, idx) => {
         btn.disabled = true;
         if (idx === q.answer) {
-          btn.classList.add('correct');
+          btn.style.background = '#ECFDF5';
+          btn.style.borderColor = '#10B981';
+          btn.style.color = '#065F46';
+          btn.style.fontWeight = '800';
         } else if (idx === chosenIdx) {
-          btn.classList.add('wrong');
+          btn.style.background = '#FEF2F2';
+          btn.style.borderColor = '#EF4444';
+          btn.style.color = '#991B1B';
         }
       });
 
@@ -4466,12 +4492,12 @@
 
       if (feedbackBox) {
         feedbackBox.style.display = 'block';
-        feedbackBox.className = `quiz-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+        feedbackBox.style.cssText = `margin-top:16px; padding:14px 16px; border-radius:12px; border:1.5px solid ${isCorrect ? '#A7F3D0' : '#FECACA'}; background:${isCorrect ? '#F0FDF4' : '#FEF2F2'};`;
         feedbackBox.innerHTML = `
-          <div style="font-weight: 800; font-size: 15px; margin-bottom: 4px;">
+          <div style="font-weight: 800; font-size: 15px; margin-bottom: 4px; color:${isCorrect ? '#15803D' : '#DC2626'};">
             ${isCorrect ? '🎉 딩동댕! 정답입니다.' : '💡 아쉬워요! 다시 기억해 보세요.'}
           </div>
-          <div>${q.explanation}</div>
+          <div style="font-size:13.5px; color:#374151; line-height:1.5;">${q.explain || ''}</div>
         `;
       }
 
@@ -4685,24 +4711,24 @@
     initCommon();
 
     const path = window.location.pathname;
-    if (path.endsWith('index.html') || path === '/' || path.endsWith('/history/')) {
-      initIndexPage();
-    } else if (path.includes('korea.html') || path.endsWith('/korea')) {
+    if (path.includes('korea')) {
       initKoreaPage();
-    } else if (path.includes('world.html') || path.endsWith('/world')) {
+    } else if (path.includes('world')) {
       initWorldPage();
-    } else if (path.includes('timeline.html') || path.endsWith('/timeline')) {
+    } else if (path.includes('timeline')) {
       initTimelinePage();
-    } else if (path.includes('map.html') || path.endsWith('/map')) {
+    } else if (path.includes('map')) {
       initMapPage();
-    } else if (path.includes('exam.html') || path.endsWith('/exam')) {
+    } else if (path.includes('exam')) {
       initExamPage();
-    } else if (path.includes('print.html') || path.endsWith('/print')) {
+    } else if (path.includes('print')) {
       initPrintPage();
-    } else if (path.includes('quiz.html') || path.endsWith('/quiz')) {
+    } else if (path.includes('quiz')) {
       initQuizPage();
-    } else if (path.includes('login.html') || path.endsWith('/login')) {
+    } else if (path.includes('login')) {
       initLoginPage();
+    } else {
+      initIndexPage();
     }
   });
 

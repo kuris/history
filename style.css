@@ -1162,7 +1162,7 @@ button {
   }
 }
 
-.quiz-choice-btn {
+.quiz-choice-btn, .choice-btn {
   padding: 16px 18px;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -1174,7 +1174,7 @@ button {
   transition: all 0.2s ease;
 }
 
-.quiz-choice-btn:hover {
+.quiz-choice-btn:hover, .choice-btn:hover {
   border-color: var(--color-point);
   background: var(--color-subtle-bg);
   transform: translateY(-2px);
