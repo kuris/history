@@ -87,6 +87,11 @@
           <button type="button" class="pill-radio" data-val="korea-modern">🇰🇷 한국 근현대사</button>
           <button type="button" class="pill-radio" data-val="korea-joseon">🇰🇷 조선 시대</button>
           <button type="button" class="pill-radio" data-val="world-revolution">🌍 세계 시민혁명·산업혁명</button>
+          <button type="button" class="pill-radio" data-val="korea-ancient">🇰🇷 선사·삼국·남북국</button>
+          <button type="button" class="pill-radio" data-val="korea-goryeo">🇰🇷 고려 시대</button>
+          <button type="button" class="pill-radio" data-val="world-ancient">🌍 고대 문명·그리스·로마</button>
+          <button type="button" class="pill-radio" data-val="world-modern">🌍 제국주의·세계대전·냉전</button>
+          <button type="button" class="pill-radio" data-val="all">🔀 한국사 + 세계사 통합</button>
         </div>
       </div>
 
@@ -100,16 +105,26 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">3. 문항 수 선택</label>
-        <div class="pill-select-group" id="count-group">
-          <button type="button" class="pill-radio active" data-val="10">10문항</button>
-          <button type="button" class="pill-radio" data-val="20">20문항</button>
-          <button type="button" class="pill-radio" data-val="30">30문항</button>
+        <label class="form-label">3. 학습 난이도 선택</label>
+        <div class="pill-select-group" id="level-group">
+          <button type="button" class="pill-radio active" data-val="all">난이도 전체</button>
+          <button type="button" class="pill-radio" data-val="중등">🟢 중학 핵심만</button>
+          <button type="button" class="pill-radio" data-val="고등">🔴 고교 심화만</button>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">4. 출력 형식</label>
+        <label class="form-label">4. 문항 수 선택</label>
+        <div class="pill-select-group" id="count-group">
+          <button type="button" class="pill-radio active" data-val="10">10문항</button>
+          <button type="button" class="pill-radio" data-val="20">20문항</button>
+          <button type="button" class="pill-radio" data-val="30">30문항</button>
+          <button type="button" class="pill-radio" data-val="50">50문항</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">5. 출력 형식</label>
         <div class="pill-select-group" id="format-group">
           <button type="button" class="pill-radio active" data-val="both">문제지 + 정답표 함께 출력</button>
           <button type="button" class="pill-radio" data-val="questions-only">문제지만 출력 (시험용)</button>

@@ -2697,3 +2697,50 @@ button {
     padding: 6px 6px;
   }
 }
+
+/* ============================================================
+   학습 난이도 배지 — 중(중학교 핵심) / 고(고등학교 심화)
+   ============================================================ */
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  height: 19px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-main);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  vertical-align: middle;
+  flex-shrink: 0;
+  cursor: help;
+}
+
+.level-badge.mid {
+  background: #DCFCE7;
+  color: #166534;
+  border: 1px solid #86EFAC;
+}
+
+.level-badge.high {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+/* 연표 필터 바의 난이도 선택 버튼 */
+.level-filter-group {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* 문장 맨 앞에 오는 난이도 배지 */
+.level-badge.lead {
+  margin-left: 0;
+  margin-right: 7px;
+}
