@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 & 내 학습 기록 - 역사야 놀자!</title>
+  <meta name="description" content="로그인하면 퀴즈 풀이 결과와 기출변형 학습 기록이 계정에 저장되어 휴대폰과 PC에서 이어서 공부할 수 있습니다.">
+  <link rel="canonical" href="https://history.chatgpts.kr/login.html">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="역사야 놀자">
+  <meta property="og:title" content="로그인 & 내 학습 기록 - 역사야 놀자!">
+  <meta property="og:description" content="로그인하면 퀴즈 풀이 결과와 기출변형 학습 기록이 계정에 저장되어 휴대폰과 PC에서 이어서 공부할 수 있습니다.">
+  <meta property="og:url" content="https://history.chatgpts.kr/login.html">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%9C%3C%2Ftext%3E%3C%2Fsvg%3E">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css?v=20260907_01">
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3321070604000141" crossorigin="anonymous"></script>
+
+  <!-- Vercel Analytics -->
+  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 헤더 -->
+    <header class="site-head">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-icon">📜</span>
+        <span>역사야 <span class="dot">놀자</span></span>
+      </a>
+      <div class="header-right">
+        <a href="login.html" class="family-btn" id="header-auth-btn">
+          <span>👤</span> <span id="auth-status-text">내 학습실</span>
+        </a>
+        <div class="family-nav-wrap">
+          <button type="button" class="family-btn" id="family-btn">
+            다른 놀자 서비스 ▾
+          </button>
+          <div class="family-dropdown" id="family-dropdown">
+            <a href="https://hanja.chatgpts.kr" target="_blank" rel="noopener">📖 한자야 놀자</a>
+            <a href="https://voca.chatgpts.kr" target="_blank" rel="noopener">⚡ 단어야 놀자</a>
+            <a href="https://fortune.chatgpts.kr" target="_blank" rel="noopener">🔮 운세야 놀자</a>
+            <a href="https://mindtest.chatgpts.kr" target="_blank" rel="noopener">🧠 마인드테스트</a>
+            <a href="https://chatgpts.kr" target="_blank" rel="noopener">🏠 chatgpts.kr</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 상단 스크롤 메뉴 -->
+    <nav class="nav-scroll" aria-label="메인 메뉴">
+      <a href="index.html" class="nav-chip">🏠 홈</a>
+      <a href="korea.html" class="nav-chip">📜 한국사</a>
+      <a href="world.html" class="nav-chip">🌍 세계사</a>
+      <a href="timeline.html" class="nav-chip">⏳ 연표 보기</a>
+      <a href="exam.html" class="nav-chip">📝 기출변형</a>
+      <a href="print.html" class="nav-chip">🖨️ 연표 프린트</a>
+      <a href="quiz.html" class="nav-chip">🎯 역사 퀴즈</a>
+      <a href="login.html" class="nav-chip active">👤 내 학습실</a>
+    </nav>
+
+    <!-- ============ 로그인 전 (인증 화면) ============ -->
+    <main id="auth-view">
+      <div class="page-header">
+        <span class="page-badge">MY HISTORY STUDY</span>
+        <h1 class="page-title">로그인하고 내 학습 기록 저장하기</h1>
+        <p class="page-desc">회원가입을 하면 <strong>풀어본 퀴즈 점수와 기출변형 학습 기록</strong>이 계정에 안전하게 보관돼요.<br>휴대폰에서 공부하고 PC에서 이어서 볼 수 있어요!</p>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" data-tab="login">
+            <i class="fa-solid fa-right-to-bracket"></i> 로그인
+          </button>
+          <button type="button" class="auth-tab" data-tab="signup">
+            <i class="fa-solid fa-user-plus"></i> 회원가입
+          </button>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <form class="auth-form" id="login-form">
+          <label>이메일
+            <input type="email" id="login-email" required placeholder="example@email.com" autocomplete="email">
+          </label>
+          <label>비밀번호
+            <input type="password" id="login-password" required placeholder="비밀번호" autocomplete="current-password">
+          </label>
+          <button type="submit" class="auth-submit-btn">
+            <i class="fa-solid fa-right-to-bracket"></i> 로그인하기
+          </button>
+        </form>
+
+        <!-- 회원가입 폼 -->
+        <form class="auth-form" id="signup-form" style="display:none;">
+          <label>별명 (닉네임)
+            <input type="text" id="signup-nickname" required placeholder="예: 역사탐험대" maxlength="20">
+          </label>
+          <label>이메일
+            <input type="email" id="signup-email" required placeholder="example@email.com" autocomplete="email">
+          </label>
+          <label>비밀번호 <small>(6자 이상)</small>
+            <input type="password" id="signup-password" required minlength="6" placeholder="6자 이상 입력" autocomplete="new-password">
+          </label>
+          <button type="submit" class="auth-submit-btn">
+            <i class="fa-solid fa-user-plus"></i> 가입하고 시작하기
+          </button>
+        </form>
+
+        <!-- 구글 소셜 로그인 -->
+        <div class="auth-divider"><span>또는 소셜 로그인</span></div>
+        <button type="button" class="btn-google" id="google-login-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.2 5.6c4.2-3.9 6.6-9.6 6.6-17z"/>
+            <path fill="#FBBC05" d="M10.5 28.6c-.5-1.4-.8-2.9-.8-4.6s.3-3.2.8-4.6l-7.9-6.2C1 16.3 0 20 0 24s1 7.7 2.6 10.8l7.9-6.2z"/>
+            <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.2-5.6c-2 1.4-4.6 2.2-8.7 2.2-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/>
+          </svg>
+          구글 계정으로 로그인
+        </button>
+
+        <div id="auth-msg"></div>
+
+        <div style="background:var(--bg-color); border-radius:8px; padding:12px 14px; margin-top:20px; font-size:12.5px; color:var(--text-muted); line-height:1.55;">
+          <i class="fa-solid fa-circle-info" style="color:var(--point-color);"></i>
+          로그인하지 않아도 모든 학습 기능(연표, 기출, 퀴즈, 프린트)을 <strong>100% 무료</strong>로 이용할 수 있습니다.<br>
+          <small style="color:#78350F;">※ 한자야 놀자, 단어야 놀자에서 가입하신 계정 그대로 로그인하여 패밀리 서비스를 함께 이용할 수 있습니다.</small>
+        </div>
+      </div>
+    </main>
+
+    <!-- ============ 로그인 후 (대시보드) ============ -->
+    <main id="dash-view" style="display:none;">
+      <div class="page-header">
+        <span class="page-badge">MY STUDY DASHBOARD</span>
+        <h1 class="page-title" id="dash-greeting">반가워요!</h1>
+        <p class="page-desc">지금까지 차곡차곡 쌓아온 역사 학습 현황입니다.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 26px;" id="dash-stats-grid">
+        <!-- script.js에서 렌더링 -->
+      </div>
+
+      <div style="background: #FFFFFF; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 24px 20px; margin-bottom: 24px; text-align: center;">
+        <h3 style="font-family: var(--font-display); font-size: 20px; color: var(--main-dark); margin-bottom: 8px;">계속 이어서 학습해 볼까요?</h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 18px;">연표와 기출문제를 통해 역사 흐름을 완벽하게 내 것으로 만들어보세요.</p>
+        
+        <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+          <a href="korea.html" class="btn-primary">📜 한국사 흐름 보기</a>
+          <a href="exam.html" class="btn-secondary">📝 기출변형 문제 풀기</a>
+          <a href="quiz.html" class="btn-secondary">🎯 퀴즈 풀기</a>
+          <button type="button" class="btn-secondary" id="logout-btn" style="color:#DC2626;">
+            <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 패밀리 서비스 배너 -->
+    <section class="nolja-family-banner">
+      <h3>놀자 패밀리 서비스 둘러보기</h3>
+      <div class="family-link-chips">
+        <a href="https://hanja.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">📖 한자야 놀자</a>
+        <a href="https://voca.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">⚡ 단어야 놀자</a>
+        <a href="https://fortune.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">🔮 운세야 놀자</a>
+        <a href="https://mindtest.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">🧠 마인드테스트</a>
+      </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="site-foot">
+      <div class="disclaimer-box">
+        <strong>※ 참고용 학습자료 안내</strong>
+        역사야 놀자의 콘텐츠는 학생들의 역사 흐름 이해와 시험 대비 복습을 돕기 위한 참고용 학습자료입니다.
+        실제 시험 출제 내용과 완전히 일치하지 않을 수 있으며, 교과서와 학교 수업 자료를 함께 참고해 주세요.
+      </div>
+      <nav class="footer-nav-links" aria-label="푸터 링크">
+        <a href="index.html">홈</a> ·
+        <a href="korea.html">한국사</a> ·
+        <a href="world.html">세계사</a> ·
+        <a href="timeline.html">연표 보기</a> ·
+        <a href="exam.html">기출변형 문제</a> ·
+        <a href="print.html">연표 프린트</a> ·
+        <a href="quiz.html">역사 퀴즈</a> ·
+        <a href="login.html">내 학습실</a>
+      </nav>
+      <div class="footer-copy">
+        <p>© 2026 역사야 놀자 (history.chatgpts.kr) · All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="script.js?v=20260907_01"></script>
+</body>
+</html>

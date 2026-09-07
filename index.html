@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>역사야 놀자 - 한국사 세계사 연표와 기출변형 문제</title>
+  <meta name="description" content="중1부터 고1까지 한국사와 세계사를 연표, 연도 암기, 기출변형 문제, 퀴즈, 프린트로 쉽게 공부하는 무료 역사 학습 사이트입니다.">
+  <link rel="canonical" href="https://history.chatgpts.kr/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="역사야 놀자">
+  <meta property="og:title" content="역사야 놀자 - 한국사 세계사 연표와 기출변형 문제">
+  <meta property="og:description" content="중1부터 고1까지 한국사와 세계사를 연표, 연도 암기, 기출변형 문제, 퀴즈, 프린트로 쉽게 공부하는 무료 역사 학습 사이트입니다.">
+  <meta property="og:url" content="https://history.chatgpts.kr/">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%9C%3C%2Ftext%3E%3C%2Fsvg%3E">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css?v=20260907_01">
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3321070604000141" crossorigin="anonymous"></script>
+
+  <!-- Vercel Analytics -->
+  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 헤더 -->
+    <header class="site-head">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-icon">📜</span>
+        <span>역사야 <span class="dot">놀자</span></span>
+      </a>
+      <div class="header-right">
+        <a href="login.html" class="family-btn" id="header-auth-btn">
+          <span>👤</span> <span id="auth-status-text">내 학습실</span>
+        </a>
+        <div class="family-nav-wrap">
+          <button type="button" class="family-btn" id="family-btn">
+            다른 놀자 서비스 ▾
+          </button>
+          <div class="family-dropdown" id="family-dropdown">
+            <a href="https://hanja.chatgpts.kr" target="_blank" rel="noopener">📖 한자야 놀자</a>
+            <a href="https://voca.chatgpts.kr" target="_blank" rel="noopener">⚡ 단어야 놀자</a>
+            <a href="https://fortune.chatgpts.kr" target="_blank" rel="noopener">🔮 운세야 놀자</a>
+            <a href="https://mindtest.chatgpts.kr" target="_blank" rel="noopener">🧠 마인드테스트</a>
+            <a href="https://chatgpts.kr" target="_blank" rel="noopener">🏠 chatgpts.kr</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 상단 스크롤 메뉴 -->
+    <nav class="nav-scroll" aria-label="메인 메뉴">
+      <a href="index.html" class="nav-chip active">🏠 홈</a>
+      <a href="korea.html" class="nav-chip">📜 한국사</a>
+      <a href="world.html" class="nav-chip">🌍 세계사</a>
+      <a href="timeline.html" class="nav-chip">⏳ 연표 보기</a>
+      <a href="exam.html" class="nav-chip">📝 기출변형</a>
+      <a href="print.html" class="nav-chip">🖨️ 연표 프린트</a>
+      <a href="quiz.html" class="nav-chip">🎯 역사 퀴즈</a>
+      <a href="login.html" class="nav-chip">👤 내 학습실</a>
+    </nav>
+
+    <!-- 상단 히어로 배너 -->
+    <section class="hero-banner">
+      <h1 class="hero-title">📜 역사야 놀자</h1>
+      <p class="hero-subtitle">
+        한국사와 세계사를 연표로 보고, 연도로 외우고, 퀴즈로 기억해요.<br>
+        중1부터 고1까지, 시험에 자주 나오는 역사 흐름을 하루 한 장면씩 쉽게 익혀보세요.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat-pill">🇰🇷 한국사 60대 핵심 사건</div>
+        <div class="hero-stat-pill">🌍 세계사 55대 핵심 사건</div>
+        <div class="hero-stat-pill">📝 기출변형 20제 수록</div>
+        <div class="hero-stat-pill">🖨️ 맞춤형 연표 프린트 생성</div>
+      </div>
+    </section>
+
+    <!-- 상단 광고 Placeholder -->
+    <div class="ad-placeholder">📢 배움의 즐거움을 더하는 역사야 놀자 학습 공간</div>
+
+    <!-- 오늘의 역사 카드 -->
+    <section class="today-history-box">
+      <div class="today-header">
+        <h3><i class="fa-solid fa-calendar-day"></i> 오늘의 역사 한 장면</h3>
+        <span class="today-date-chip" id="today-date-text">오늘의 역사</span>
+      </div>
+      <div class="today-grid">
+        <div class="today-item" id="today-korea-box">
+          <div class="today-item-type">🇰🇷 오늘의 한국사</div>
+          <div class="today-item-title">역사 사건 불러오는 중...</div>
+        </div>
+        <div class="today-item" id="today-world-box">
+          <div class="today-item-type">🌍 오늘의 세계사</div>
+          <div class="today-item-title">역사 사건 불러오는 중...</div>
+        </div>
+      </div>
+      <div class="today-item" id="today-quiz-box" style="background:#FFFBEB; border-color:#FDE68A;">
+        <div class="today-item-type">🎯 오늘의 한 줄 퀴즈</div>
+        <div class="today-item-title">퀴즈를 불러오는 중...</div>
+      </div>
+    </section>
+
+    <!-- 6대 메인 CTA 카드 -->
+    <section>
+      <div style="margin-bottom: 14px;">
+        <h2 style="font-family: var(--font-display); font-size: 22px; color: var(--main-dark);">✨ 역사 학습 마당</h2>
+        <p style="font-size: 14px; color: var(--text-muted);">원하는 학습 방식을 선택해 오늘 바로 시작해 보세요.</p>
+      </div>
+
+      <div class="cta-grid">
+        <!-- 1. 한국사 흐름 보기 -->
+        <article class="cta-card">
+          <div class="cta-icon">📜</div>
+          <h3 class="cta-title">한국사 흐름 보기</h3>
+          <p class="cta-desc">고조선부터 현대까지 한국사의 큰 흐름을 9대 시대별 카드와 연표로 한눈에 정리해요.</p>
+          <a href="korea.html" class="cta-btn">한국사 시작하기 →</a>
+        </article>
+
+        <!-- 2. 세계사 흐름 보기 -->
+        <article class="cta-card">
+          <div class="cta-icon">🌍</div>
+          <h3 class="cta-title">세계사 흐름 보기</h3>
+          <p class="cta-desc">4대 문명부터 냉전 이후 현대까지 세계사의 결정적 사건을 시대별 카드로 쉽게 파악해요.</p>
+          <a href="world.html" class="cta-btn">세계사 시작하기 →</a>
+        </article>
+
+        <!-- 3. 연표 보기 -->
+        <article class="cta-card">
+          <div class="cta-icon">⏳</div>
+          <h3 class="cta-title">통합 연표 보기</h3>
+          <p class="cta-desc">한국사와 세계사의 동시대 주요 사건을 연도순으로 정렬하여 실시간 검색과 필터로 복습해요.</p>
+          <a href="timeline.html" class="cta-btn">연표 보기 →</a>
+        </article>
+
+        <!-- 4. 기출변형 문제 -->
+        <article class="cta-card">
+          <div class="cta-icon">📝</div>
+          <h3 class="cta-title">기출변형 문제</h3>
+          <p class="cta-desc">시험에 자주 나오는 핵심 출제 포인트를 자체 제작한 20개 변형 문제와 상세 해설로 정복해요.</p>
+          <a href="exam.html" class="cta-btn">문제 풀기 →</a>
+        </article>
+
+        <!-- 5. 연표 암기 프린트 -->
+        <article class="cta-card">
+          <div class="cta-icon">🖨️</div>
+          <h3 class="cta-title">연표 암기 프린트</h3>
+          <p class="cta-desc">연도 빈칸, 사건 빈칸, 순서 맞추기 학습지를 범위와 문항수별로 만들어 인쇄하거나 PDF로 저장해요.</p>
+          <a href="print.html" class="cta-btn">프린트 만들기 →</a>
+        </article>
+
+        <!-- 6. 역사 퀴즈 -->
+        <article class="cta-card">
+          <div class="cta-icon">🎯</div>
+          <h3 class="cta-title">역사 퀴즈</h3>
+          <p class="cta-desc">사건, 연도, 인물, 시대를 4지선다 퀴즈로 가볍게 풀고 실시간 점수와 오답 노트를 확인해요.</p>
+          <a href="quiz.html" class="cta-btn">퀴즈 풀기 →</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 중간 광고 Placeholder -->
+    <div class="ad-placeholder">📢 역사 지식을 차곡차곡 쌓는 스마트한 학습 습관</div>
+
+    <!-- 패밀리 서비스 배너 -->
+    <section class="nolja-family-banner">
+      <h3>놀자 패밀리 서비스 둘러보기</h3>
+      <div class="family-link-chips">
+        <a href="https://hanja.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">📖 한자야 놀자</a>
+        <a href="https://voca.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">⚡ 단어야 놀자</a>
+        <a href="https://fortune.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">🔮 운세야 놀자</a>
+        <a href="https://mindtest.chatgpts.kr" target="_blank" rel="noopener" class="family-chip-link">🧠 마인드테스트</a>
+      </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="site-foot">
+      <div class="disclaimer-box">
+        <strong>※ 참고용 학습자료 안내</strong>
+        역사야 놀자의 콘텐츠는 학생들의 역사 흐름 이해와 시험 대비 복습을 돕기 위한 참고용 학습자료입니다.
+        실제 시험 출제 내용과 완전히 일치하지 않을 수 있으며, 교과서와 학교 수업 자료를 함께 참고해 주세요.
+      </div>
+      <nav class="footer-nav-links" aria-label="푸터 링크">
+        <a href="index.html">홈</a> ·
+        <a href="korea.html">한국사</a> ·
+        <a href="world.html">세계사</a> ·
+        <a href="timeline.html">연표 보기</a> ·
+        <a href="exam.html">기출변형 문제</a> ·
+        <a href="print.html">연표 프린트</a> ·
+        <a href="quiz.html">역사 퀴즈</a> ·
+        <a href="login.html">내 학습실</a>
+      </nav>
+      <div class="footer-copy">
+        <p>© 2026 역사야 놀자 (history.chatgpts.kr) · All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="script.js?v=20260907_01"></script>
+</body>
+</html>
