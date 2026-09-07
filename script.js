@@ -9126,6 +9126,635 @@
     });
   }
 
+
+  // ============================================================
+  // 7-B. 연표 카드 미니 퀴즈 ("🎯 바로 문제풀기")
+  //   - 연표를 보다가 카드 안에서 바로 4지선다 연습 문제를 풀 수 있게 합니다.
+  //   - 실제 기출문항을 옮겨 온 것이 아니라, 자주 다루는 출제 유형을 참고해
+  //     기존 사건 데이터로 그때그때 만들어 내는 자체 제작 문항입니다.
+  //   - 서버/외부 라이브러리 없이 기존 ALL_EVENTS 배열만 사용합니다.
+  // ============================================================
+
+  const TIMELINE_QUIZ_NOTICE =
+    '※ 이 문제는 실제 기출문항이 아닌, 수능·모의고사·한능검에서 자주 다루는 ' +
+    '출제 유형을 참고해 만든 자체 제작 연습 문제입니다.';
+
+  const QUIZ_TYPE_LABEL = {
+    year: '연도 맞히기',
+    event: '설명 → 사건',
+    period: '시대 연결',
+    keyword: '키워드 연결',
+    compare: '동시대 비교',
+    custom: '출제 유형 연습'
+  };
+
+  // 동시대 비교 문제에서 "비슷한 시기"를 판단할 때 쓰는 시대 구간입니다.
+  // 함께 보기(비교 연표)의 구간과 같은 기준을 씁니다.
+  const ERA_BANDS = [
+    { label: '고대 문명과 삼국',      range: 'BC 2333 ~ 675',  from: -99999, to: 675 },
+    { label: '남북국과 중세',         range: '676 ~ 917',      from: 676,    to: 917 },
+    { label: '고려와 중세 유럽',      range: '918 ~ 1391',     from: 918,    to: 1391 },
+    { label: '조선 전기와 대항해',    range: '1392 ~ 1591',    from: 1392,   to: 1591 },
+    { label: '조선 후기와 시민혁명',  range: '1592 ~ 1862',    from: 1592,   to: 1862 },
+    { label: '개항과 제국주의',       range: '1863 ~ 1909',    from: 1863,   to: 1909 },
+    { label: '일제강점기와 세계대전', range: '1910 ~ 1944',    from: 1910,   to: 1944 },
+    { label: '광복과 현대 세계',      range: '1945 ~',         from: 1945,   to: 99999 }
+  ];
+
+  const EVENT_BY_ID = new Map(ALL_EVENTS.map(e => [e.id, e]));
+
+  // ------------------------------------------------------------
+  // 통계 이벤트 — 분석 도구가 붙어 있으면 넘기고, 없으면 console.log 로 남깁니다.
+  // ------------------------------------------------------------
+  function trackEvent(name, payload) {
+    const detail = payload || {};
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', name, detail);
+      } else if (Array.isArray(window.dataLayer)) {
+        window.dataLayer.push(Object.assign({ event: name }, detail));
+      }
+    } catch (err) {
+      // 분석 도구가 없거나 막혀 있어도 학습 흐름은 그대로 이어져야 합니다.
+    }
+    console.log('[trackEvent]', name, detail);
+  }
+  window.trackEvent = window.trackEvent || trackEvent;
+
+  // ------------------------------------------------------------
+  // 데이터 접근자 — 기존 필드(type/yearDisplay/mnemonic)와
+  // 문서상의 별칭(category/yearText/tip)을 함께 지원합니다.
+  // ------------------------------------------------------------
+  function evCategory(e) { return e.category || e.type; }
+  function evYearText(e) { return e.yearText || e.yearDisplay || String(e.year); }
+  function evTip(e) { return e.tip || e.mnemonic || ''; }
+
+  /** 제목 끝의 괄호 보충 설명은 문제 문장에서 덜어 냅니다. */
+  function cleanTitle(e) {
+    const t = e.title || '';
+    return t.replace(/\s*[（(][^）)]*[）)]\s*$/, '').trim() || t;
+  }
+
+  /** 받침 유무에 따라 조사를 고릅니다. (한글이 아니면 받침이 있는 쪽으로) */
+  function hasJong(word) {
+    if (!word) return true;
+    const code = word.charCodeAt(word.length - 1);
+    if (code < 0xAC00 || code > 0xD7A3) return true;
+    return (code - 0xAC00) % 28 !== 0;
+  }
+  function josa(word, withJong, withoutJong) {
+    return word + (hasJong(word) ? withJong : withoutJong);
+  }
+
+  // ------------------------------------------------------------
+  // 사건 id 로 고정된 난수 — 같은 카드는 늘 같은 문제가 나오도록 합니다.
+  // (필터·검색으로 다시 그려도 문제가 바뀌지 않습니다)
+  // ------------------------------------------------------------
+  function seedFrom(str) {
+    let h = 2166136261;
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+  function makeRng(seed) {
+    let s = (seed >>> 0) || 1;
+    return function () {
+      s ^= s << 13; s >>>= 0;
+      s ^= s >> 17;
+      s ^= s << 5;  s >>>= 0;
+      return s / 4294967296;
+    };
+  }
+  function shuffle(list, rng) {
+    const arr = list.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function eraBandOf(year) {
+    return ERA_BANDS.find(b => year >= b.from && year <= b.to) || null;
+  }
+
+  /**
+   * 오답 후보를 고릅니다.
+   * 같은 시대(period) → 같은 계열(category) → 전체 순으로 훑어
+   * 항상 3개를 채우려 시도합니다. (11번 규칙)
+   */
+  function pickDistractors(event, rng, valueOf, count, isUsed) {
+    const picked = [];
+    const tiers = [
+      ALL_EVENTS.filter(e => e !== event && e.period === event.period),
+      ALL_EVENTS.filter(e => e !== event && evCategory(e) === evCategory(event) && e.period !== event.period),
+      ALL_EVENTS.filter(e => e !== event && evCategory(e) !== evCategory(event))
+    ];
+    for (const tier of tiers) {
+      const shuffled = shuffle(tier, rng);
+      for (const cand of shuffled) {
+        if (picked.length >= count) break;
+        const value = valueOf(cand);
+        if (!value || isUsed(value, cand)) continue;
+        picked.push(value);
+      }
+      if (picked.length >= count) break;
+    }
+    return picked;
+  }
+
+  /** 정답 1개 + 오답 3개를 섞고 정답 위치를 다시 찾습니다. */
+  function assembleChoices(answerText, distractors, rng) {
+    const choices = shuffle([answerText].concat(distractors), rng);
+    return { choices: choices, answer: choices.indexOf(answerText) };
+  }
+
+  // ------------------------------------------------------------
+  // 문제 유형별 생성기 — 만들 수 없으면 null 을 돌려주고 다음 유형으로 넘깁니다.
+  // ------------------------------------------------------------
+
+  /** 연도 표기 형태 — '기원전 108년'과 '약 70만 년 전'이 섞이면 정답이 티가 납니다. */
+  function yearShape(text) {
+    return [/^기원전/.test(text), /경$/.test(text), /세기/.test(text), /^약/.test(text)].join('');
+  }
+
+  /** ① 이 사건이 일어난 연도는? */
+  function buildYearQuiz(event, rng) {
+    const answerText = evYearText(event);
+    const shape = yearShape(answerText);
+    const usedText = new Set([answerText]);
+    const usedYear = new Set([event.year]);
+    const reject = (sameShapeOnly) => (value, cand) => {
+      if (usedText.has(value) || usedYear.has(cand.year)) return true;
+      if (sameShapeOnly && yearShape(value) !== shape) return true;
+      usedText.add(value); usedYear.add(cand.year);
+      return false;
+    };
+    // 표기가 같은 보기를 먼저 채우고, 모자라면 형태를 가리지 않고 채웁니다.
+    const distractors = pickDistractors(event, rng, evYearText, 3, reject(true));
+    if (distractors.length < 3) {
+      pickDistractors(event, rng, evYearText, 3 - distractors.length, reject(false))
+        .forEach(v => distractors.push(v));
+    }
+    if (distractors.length < 3) return null;
+
+    const title = cleanTitle(event);
+    const picked = assembleChoices(answerText, distractors, rng);
+    return {
+      type: 'year',
+      question: josa(title, '이', '가') + ' 일어난 해는?',
+      choices: picked.choices,
+      answer: picked.answer,
+      explanation: josa(title, '은', '는') + ' ' + evYearText(event) + '에 일어난 사건입니다.',
+      tip: evTip(event)
+    };
+  }
+
+  /** ② 이 설명에 해당하는 사건은? (제목 낱말은 ○○ 로 가려 둡니다) */
+  function buildEventQuiz(event, rng) {
+    if (!event.summary) return null;
+    const title = cleanTitle(event);
+    const usedTitle = new Set([title, event.title]);
+    const distractors = pickDistractors(event, rng, cleanTitle, 3, (value) => {
+      if (usedTitle.has(value)) return true;
+      usedTitle.add(value);
+      return false;
+    });
+    if (distractors.length < 3) return null;
+
+    // 제목에 쓰인 낱말을 가려 두어야 설명만 보고 고르는 문제가 됩니다.
+    // 다만 '시대·시작' 같은 일반적인 낱말까지 가리면 문장이 어색해져 그대로 둡니다.
+    const MASK_STOPWORDS = ['시대', '시대의', '시작', '사건', '최초', '이후', '우리', '설치', '체결'];
+    let masked = event.summary;
+    title.split(/[\s·,()]+/)
+      .filter(w => w.length >= 2 && MASK_STOPWORDS.indexOf(w) === -1)
+      .forEach(w => { masked = masked.split(w).join('○○'); });
+
+    const picked = assembleChoices(title, distractors, rng);
+    return {
+      type: 'event',
+      question: '다음 설명에 해당하는 사건은?',
+      prompt: masked,
+      choices: picked.choices,
+      answer: picked.answer,
+      explanation: josa(title, '은', '는') + ' ' + evYearText(event) + '에 있었던 일입니다. ' + event.summary,
+      tip: evTip(event)
+    };
+  }
+
+  /** ③ 이 사건과 관련된 시대는? */
+  function buildPeriodQuiz(event, rng) {
+    if (!event.period) return null;
+    const sameSide = [];
+    const otherSide = [];
+    ALL_EVENTS.forEach(e => {
+      if (e.period === event.period) return;
+      const bucket = evCategory(e) === evCategory(event) ? sameSide : otherSide;
+      if (bucket.indexOf(e.period) === -1) bucket.push(e.period);
+    });
+    const pool = shuffle(sameSide, rng).concat(shuffle(otherSide, rng));
+    const distractors = pool.slice(0, 3);
+    if (distractors.length < 3) return null;
+
+    const title = cleanTitle(event);
+    const picked = assembleChoices(event.period, distractors, rng);
+    return {
+      type: 'period',
+      question: josa(title, '은', '는') + ' 어느 시대에 해당할까요?',
+      choices: picked.choices,
+      answer: picked.answer,
+      explanation: josa(title, '은', '는') + ' ' + evYearText(event) + ', ' +
+        '‘' + event.period + '’ 시기에 해당하는 사건입니다.',
+      tip: evTip(event)
+    };
+  }
+
+  /** ④ 이 사건과 관련 있는 키워드는? */
+  function buildKeywordQuiz(event, rng) {
+    const keywords = event.keywords || [];
+    if (!keywords.length) return null;
+
+    const title = cleanTitle(event);
+    // 제목에 이미 드러난 낱말은 답으로 쓰지 않습니다.
+    const answerPool = keywords.filter(k => title.indexOf(k) === -1);
+    const answerText = shuffle(answerPool.length ? answerPool : keywords, rng)[0];
+
+    const selfText = (event.title + ' ' + (event.summary || '') + ' ' +
+      (event.examPoint || '') + ' ' + keywords.join(' '));
+    const used = new Set([answerText]);
+    const distractors = [];
+    // 시대가 다른 사건의 키워드라야 "그럴듯하지만 틀린" 보기가 됩니다.
+    const pool = shuffle(ALL_EVENTS.filter(e => e !== event && e.period !== event.period), rng);
+    for (const cand of pool) {
+      if (distractors.length >= 3) break;
+      const candKeywords = shuffle(cand.keywords || [], rng);
+      for (const kw of candKeywords) {
+        if (distractors.length >= 3) break;
+        if (used.has(kw)) continue;
+        if (selfText.indexOf(kw) !== -1) continue;
+        if (keywords.some(k => k.indexOf(kw) !== -1 || kw.indexOf(k) !== -1)) continue;
+        used.add(kw);
+        distractors.push(kw);
+      }
+    }
+    if (distractors.length < 3) return null;
+
+    const picked = assembleChoices(answerText, distractors, rng);
+    return {
+      type: 'keyword',
+      question: josa(title, '과', '와') + ' 가장 관련이 깊은 키워드는?',
+      choices: picked.choices,
+      answer: picked.answer,
+      explanation: josa(title, '은', '는') + ' ' +
+        [answerText].concat(keywords.filter(k => k !== answerText)).slice(0, 4)
+          .map(k => '‘' + k + '’').join(', ') + ' 등이 핵심 키워드입니다.',
+      tip: evTip(event)
+    };
+  }
+
+  /** ⑤ 같은 시기에 일어난 세계사/한국사 사건은? (동시대 비교) */
+  function buildCompareQuiz(event, rng) {
+    const side = evCategory(event);
+    if (side !== 'korea' && side !== 'world') return null;
+    const oppositeSide = side === 'korea' ? 'world' : 'korea';
+    const pool = ALL_EVENTS.filter(e => evCategory(e) === oppositeSide);
+    if (!pool.length) return null;
+
+    const band = eraBandOf(event.year);
+    // ±100년 안에서 먼저 찾고, 없으면 같은 시대 구간에서 찾습니다.
+    let near = pool.filter(e => Math.abs(e.year - event.year) <= 100);
+    let matchMode = 'near';
+    if (!near.length && band) {
+      near = pool.filter(e => e.year >= band.from && e.year <= band.to);
+      matchMode = 'band';
+    }
+    if (!near.length) return null;
+
+    // 중요도가 높고 시기가 가까운 사건을 정답으로 씁니다.
+    const answerEvent = near.slice().sort((a, b) =>
+      (b.importance - a.importance) ||
+      (Math.abs(a.year - event.year) - Math.abs(b.year - event.year))
+    )[0];
+
+    // 오답은 시기가 확실히 떨어진 사건이라야 정답이 하나로 정해집니다.
+    let far = pool.filter(e => Math.abs(e.year - event.year) > 300);
+    if (band) far = far.filter(e => e.year < band.from || e.year > band.to);
+    if (far.length < 3) return null;
+
+    const usedTitle = new Set([cleanTitle(answerEvent), cleanTitle(event)]);
+    const distractors = [];
+    shuffle(far, rng).forEach(cand => {
+      if (distractors.length >= 3) return;
+      const value = cleanTitle(cand);
+      if (usedTitle.has(value)) return;
+      usedTitle.add(value);
+      distractors.push(value);
+    });
+    if (distractors.length < 3) return null;
+
+    const title = cleanTitle(event);
+    const answerText = cleanTitle(answerEvent);
+    const picked = assembleChoices(answerText, distractors, rng);
+    const oppositeLabel = oppositeSide === 'world' ? '세계' : '한국';
+    const sideLabel = oppositeSide === 'world' ? '세계사' : '한국사';
+    // ±100년으로 맞춘 짝은 "무렵"으로, 시대 구간으로 맞춘 짝은 "같은 시대 구간"으로
+    // 물어야 실제 연도 차이를 부풀리지 않습니다.
+    const question = matchMode === 'near'
+      ? josa(title, '이', '가') + ' 일어난 무렵(' + evYearText(event) + '), ' +
+        oppositeLabel + '에서 볼 수 있는 사건은?'
+      : title + '(' + evYearText(event) + ')' + (hasJong(title) ? '과' : '와') + ' 같은 시대 구간' +
+        (band ? '(' + band.label + ')' : '') + '에 속하는 ' + sideLabel + ' 사건은?';
+    const explanation = matchMode === 'near'
+      ? title + '(' + evYearText(event) + ') 무렵, ' + oppositeLabel + '에서는 ' +
+        answerText + '(' + evYearText(answerEvent) + ')' + (hasJong(answerText) ? '이' : '가') +
+        ' 있었습니다.'
+      : title + '(' + evYearText(event) + ')' + (hasJong(title) ? '과' : '와') + ' ' +
+        answerText + '(' + evYearText(answerEvent) + ')' + (hasJong(answerText) ? '은' : '는') +
+        ' 모두 ' + (band ? '‘' + band.label + '’ ' : '') + '구간에 속합니다.';
+    return {
+      type: 'compare',
+      question: question,
+      choices: picked.choices,
+      answer: picked.answer,
+      explanation: explanation,
+      tip: evTip(event)
+    };
+  }
+
+  const QUIZ_BUILDERS = {
+    year: buildYearQuiz,
+    event: buildEventQuiz,
+    period: buildPeriodQuiz,
+    keyword: buildKeywordQuiz,
+    compare: buildCompareQuiz
+  };
+  const QUIZ_TYPE_ORDER = ['year', 'event', 'period', 'keyword', 'compare'];
+
+  /** 데이터에 quiz 가 이미 들어 있으면 그대로 씁니다. (6번 규칙) */
+  function normalizeProvidedQuiz(event) {
+    const q = event.quiz;
+    const choices = (q.choices || []).slice(0, 4).map(c => String(c));
+    let answer = typeof q.answer === 'number' ? q.answer : choices.indexOf(String(q.answer));
+    if (answer < 0 || answer >= choices.length) answer = 0;
+    return {
+      type: q.type || 'custom',
+      question: q.question || (cleanTitle(event) + '에 대한 문제입니다.'),
+      prompt: q.prompt || '',
+      choices: choices,
+      answer: answer,
+      explanation: q.explanation || q.explain || '',
+      tip: q.tip || evTip(event)
+    };
+  }
+
+  /**
+   * 카드 하나에 붙일 문제를 만듭니다.
+   *  - event.quiz.choices 가 있으면 그 문항을 그대로
+   *  - event.quiz.type 만 있으면 그 유형으로 자동 생성
+   *  - 둘 다 없으면 사건 id 기준으로 유형을 골라 자동 생성
+   */
+  function buildTimelineQuiz(event) {
+    if (!event) return null;
+    if (event.quiz && Array.isArray(event.quiz.choices) && event.quiz.choices.length >= 2) {
+      return normalizeProvidedQuiz(event);
+    }
+
+    const rng = makeRng(seedFrom(event.id || event.title));
+    const requested = event.quiz && event.quiz.type;
+    const order = requested && QUIZ_BUILDERS[requested]
+      ? [requested].concat(QUIZ_TYPE_ORDER.filter(t => t !== requested))
+      : shuffle(QUIZ_TYPE_ORDER, rng);
+
+    for (const type of order) {
+      let quiz = null;
+      try {
+        quiz = QUIZ_BUILDERS[type](event, makeRng(seedFrom((event.id || '') + type)));
+      } catch (err) {
+        quiz = null;
+      }
+      if (quiz && quiz.choices.length === 4) {
+        // 문항 문구만 데이터로 덮어쓸 수 있게 열어 둡니다.
+        if (event.quiz && event.quiz.question) quiz.question = event.quiz.question;
+        if (event.quiz && event.quiz.explanation) quiz.explanation = event.quiz.explanation;
+        if (event.quiz && event.quiz.tip) quiz.tip = event.quiz.tip;
+        return quiz;
+      }
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------
+  // 렌더링
+  // ------------------------------------------------------------
+
+  /** 카드 하단에 붙는 "바로 문제풀기" 버튼과 (비어 있는) 퀴즈 영역 */
+  function quizTriggerHtml(event) {
+    const id = escapeHtml(event.id);
+    const label = escapeHtml(cleanTitle(event));
+    return `
+      <div class="tq-trigger-row">
+        <button type="button" class="tq-open-btn" data-quiz-open="${id}"
+                aria-expanded="false" aria-controls="tq-panel-${id}"
+                aria-label="${label} 미니 문제 풀기">🎯 바로 문제풀기</button>
+      </div>
+      <div class="tq-panel" id="tq-panel-${id}" data-quiz-panel="${id}" hidden></div>`;
+  }
+
+  function quizLinksHtml() {
+    return `
+      <div class="tq-links">
+        <a href="quiz.html">전체 역사 퀴즈 풀기</a>
+        <a href="print.html">연표 프린트 만들기</a>
+        <a href="korea.html">한국사 흐름 보기</a>
+        <a href="world.html">세계사 흐름 보기</a>
+      </div>`;
+  }
+
+  /** 퀴즈 영역 내용을 처음부터 다시 그립니다. (열기 / 다시 풀기 공용) */
+  function renderQuizPanel(panel, event) {
+    const quiz = buildTimelineQuiz(event);
+    if (!quiz) {
+      panel.innerHTML = `
+        <p class="tq-empty">이 사건은 아직 연습 문제를 준비하지 못했어요.
+          <a href="quiz.html">전체 역사 퀴즈 풀기</a>로 이어서 복습해 보세요.</p>`;
+      return;
+    }
+
+    panel.dataset.answer = String(quiz.answer);
+    panel.dataset.answered = '0';
+    panel.dataset.quizType = quiz.type;
+
+    const typeLabel = QUIZ_TYPE_LABEL[quiz.type] || QUIZ_TYPE_LABEL.custom;
+    panel.innerHTML = `
+      <div class="tq-head">
+        <span class="tq-badge">🎯 기출변형 연습</span>
+        <span class="tq-type">${escapeHtml(typeLabel)}</span>
+      </div>
+      <p class="tq-question">${escapeHtml(quiz.question)}</p>
+      ${quiz.prompt ? `<p class="tq-prompt">${escapeHtml(quiz.prompt)}</p>` : ''}
+      <div class="tq-choices" role="group" aria-label="선택지 ${quiz.choices.length}개">
+        ${quiz.choices.map((c, i) => `
+          <button type="button" class="tq-choice" data-quiz-choice="${i}"
+                  aria-label="${i + 1}번 선택지 ${escapeHtml(c)}">
+            <span class="tq-choice-num">${i + 1}</span>
+            <span class="tq-choice-text">${escapeHtml(c)}</span>
+            <span class="tq-choice-mark" aria-hidden="true"></span>
+          </button>`).join('')}
+      </div>
+      <div class="tq-result" role="status" aria-live="polite" hidden></div>
+      <div class="tq-foot">
+        <button type="button" class="tq-btn" data-quiz-retry
+                aria-label="이 문제 다시 풀기">↺ 다시 풀기</button>
+        <button type="button" class="tq-btn" data-quiz-close
+                aria-label="문제 영역 접기">✕ 접기</button>
+        <a class="tq-btn tq-btn-link" href="quiz.html"
+           aria-label="전체 역사 퀴즈 페이지로 이동">전체 역사 퀴즈 풀기 →</a>
+      </div>
+      <p class="tq-notice">${escapeHtml(TIMELINE_QUIZ_NOTICE)}</p>
+    `;
+    panel._quiz = quiz;
+  }
+
+  /** 선택지를 눌렀을 때의 채점 및 해설 표시 */
+  function gradeQuizPanel(panel, event, choiceIndex) {
+    if (!panel._quiz || panel.dataset.answered === '1') return;
+    const quiz = panel._quiz;
+    const isCorrect = choiceIndex === quiz.answer;
+    panel.dataset.answered = '1';
+
+    panel.querySelectorAll('.tq-choice').forEach(btn => {
+      const idx = Number(btn.getAttribute('data-quiz-choice'));
+      btn.setAttribute('aria-disabled', 'true');
+      if (idx === quiz.answer) {
+        btn.classList.add('is-correct');
+        btn.querySelector('.tq-choice-mark').textContent = '✓';
+      } else if (idx === choiceIndex) {
+        btn.classList.add('is-wrong');
+        btn.querySelector('.tq-choice-mark').textContent = '✗';
+      } else {
+        btn.classList.add('is-dim');
+      }
+    });
+
+    const result = panel.querySelector('.tq-result');
+    const answerText = quiz.choices[quiz.answer];
+    result.className = 'tq-result ' + (isCorrect ? 'is-correct' : 'is-wrong');
+    result.hidden = false;
+    result.innerHTML = `
+      <p class="tq-result-title">${isCorrect ? '⭕ 정답입니다!' : '❌ 아쉬워요!'}</p>
+      <p class="tq-result-answer">정답은 <strong>${quiz.answer + 1}번 ${escapeHtml(answerText)}</strong>입니다.</p>
+      ${quiz.explanation ? `<p class="tq-result-explain">${escapeHtml(quiz.explanation)}</p>` : ''}
+      ${quiz.tip ? `<p class="tq-result-tip">💡 암기팁 · ${escapeHtml(quiz.tip)}</p>` : ''}
+      ${quizLinksHtml()}
+    `;
+
+    const payload = {
+      eventId: event.id,
+      title: event.title,
+      quizType: quiz.type,
+      selected: choiceIndex,
+      answer: quiz.answer
+    };
+    trackEvent('timeline_quiz_answer', payload);
+    trackEvent(isCorrect ? 'timeline_quiz_correct' : 'timeline_quiz_wrong', payload);
+  }
+
+  /**
+   * 연표 목록에 퀴즈 동작을 한 번만 붙여 둡니다.
+   * 이벤트 위임이라 필터·검색으로 카드를 다시 그려도 그대로 동작합니다.
+   * 선택지는 <button> 이라 키보드(Tab·Enter·Space)로도 풀 수 있습니다.
+   */
+  function bindTimelineQuiz(container) {
+    if (!container || container.dataset.tqBound === '1') return;
+    container.dataset.tqBound = '1';
+
+    container.addEventListener('click', (e) => {
+      const openBtn = e.target.closest('[data-quiz-open]');
+      if (openBtn && container.contains(openBtn)) {
+        toggleQuizPanel(openBtn);
+        return;
+      }
+
+      const panel = e.target.closest('.tq-panel');
+      if (!panel || !container.contains(panel)) return;
+      const event = EVENT_BY_ID.get(panel.getAttribute('data-quiz-panel'));
+      if (!event) return;
+
+      const choice = e.target.closest('[data-quiz-choice]');
+      if (choice) {
+        gradeQuizPanel(panel, event, Number(choice.getAttribute('data-quiz-choice')));
+        return;
+      }
+
+      if (e.target.closest('[data-quiz-retry]')) {
+        renderQuizPanel(panel, event);
+        trackEvent('timeline_quiz_retry', { eventId: event.id, title: event.title });
+        const first = panel.querySelector('.tq-choice');
+        if (first) first.focus();
+        return;
+      }
+
+      if (e.target.closest('[data-quiz-close]')) {
+        const host = panel.closest('.timeline-card, .cmp-item') || panel.parentElement;
+        const trigger = host ? host.querySelector('[data-quiz-open]') : null;
+        closeQuizPanel(trigger, panel);
+        if (trigger) trigger.focus();
+      }
+    });
+  }
+
+  function quizRowOf(el) {
+    return el ? el.closest('.cmp-row') : null;
+  }
+
+  function toggleQuizPanel(trigger) {
+    const id = trigger.getAttribute('data-quiz-open');
+    const panel = document.getElementById('tq-panel-' + id);
+    const event = EVENT_BY_ID.get(id);
+    if (!panel || !event) return;
+
+    if (!panel.hidden) {
+      closeQuizPanel(trigger, panel);
+      return;
+    }
+
+    renderQuizPanel(panel, event);
+    panel.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    trigger.classList.add('is-open');
+    trigger.textContent = '🎯 문제 접기';
+    const card = trigger.closest('.timeline-card, .cmp-item');
+    if (card) card.classList.add('tq-active');
+    // 좁은 화면의 비교 연표에서는 그 줄만 1열로 펴서 선택지를 크게 보여 줍니다.
+    const row = quizRowOf(trigger);
+    if (row) row.classList.add('has-open-quiz');
+
+    trackEvent('timeline_quiz_open', { eventId: event.id, title: event.title });
+  }
+
+  function closeQuizPanel(trigger, panel) {
+    if (panel) {
+      panel.hidden = true;
+      panel.innerHTML = '';
+      panel._quiz = null;
+      panel.dataset.answered = '0';
+    }
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.classList.remove('is-open');
+      trigger.textContent = '🎯 바로 문제풀기';
+      const card = trigger.closest('.timeline-card, .cmp-item');
+      if (card) card.classList.remove('tq-active');
+      const row = quizRowOf(trigger);
+      if (row && !row.querySelector('.tq-panel:not([hidden])')) {
+        row.classList.remove('has-open-quiz');
+      }
+    }
+  }
+
   // ============================================================
   // 8. timeline.html - 통합 검색 연표 (스마트 검색 & 파라미터 연동)
   // ============================================================
@@ -9203,16 +9832,13 @@
     // 함께 보기 — 같은 시대 구간의 한국사와 세계사를 좌우로 맞대어 봅니다.
     // 구간은 두 계열 모두 사건이 존재하도록 잡았습니다(양쪽 다 비는 구간 없음).
     // ------------------------------------------------------------
-    const COMPARE_BANDS = [
-      { label: '고대 문명과 삼국',      range: 'BC 2333 ~ 675',  from: -99999, to: 675 },
-      { label: '남북국과 중세',         range: '676 ~ 917',      from: 676,    to: 917 },
-      { label: '고려와 중세 유럽',      range: '918 ~ 1391',     from: 918,    to: 1391 },
-      { label: '조선 전기와 대항해',    range: '1392 ~ 1591',    from: 1392,   to: 1591 },
-      { label: '조선 후기와 시민혁명',  range: '1592 ~ 1862',    from: 1592,   to: 1862 },
-      { label: '개항과 제국주의',       range: '1863 ~ 1909',    from: 1863,   to: 1909 },
-      { label: '일제강점기와 세계대전', range: '1910 ~ 1944',    from: 1910,   to: 1944 },
-      { label: '광복과 현대 세계',      range: '1945 ~',         from: 1945,   to: 99999 }
-    ];
+    // 구간 정의는 동시대 비교 문제(ERA_BANDS)와 같은 기준을 쓰되,
+    // 첫 구간의 하한만 열어 둡니다. 선사 시대(약 70만 년 전)처럼 아주 이른 사건이
+    // 어느 구간에도 들지 못해 함께 보기에서 통째로 빠지는 일을 막기 위해서입니다.
+    // 동시대 비교 문제는 ERA_BANDS 를 그대로 써서 시기 판정을 좁게 유지합니다.
+    const COMPARE_BANDS = ERA_BANDS.map((b, i) =>
+      i === 0 ? Object.assign({}, b, { from: -Infinity, range: '선사 ~ 675' }) : b
+    );
 
     function compareItemHtml(item) {
       const stars = '★'.repeat(item.importance) + '☆'.repeat(3 - item.importance);
@@ -9224,6 +9850,7 @@
           </div>
           <div class="cmp-item-title">${item.title}</div>
           ${item.mnemonic ? `<div class="cmp-item-mnemonic">💡 ${item.mnemonic}</div>` : ''}
+          ${quizTriggerHtml(item)}
         </div>`;
     }
 
@@ -9249,10 +9876,22 @@
       return rows;
     }
 
-    /** 구간이 넓을수록 "비슷한 시기"의 폭도 넓어집니다(고대 vs 현대). */
+    /**
+     * 구간이 넓을수록 "비슷한 시기"의 폭도 넓어집니다(고대 vs 현대).
+     * 다만 구석기(약 70만 년 전)처럼 홀로 아득히 떨어진 사건이 하나 섞이면
+     * 최소~최대 폭이 통째로 부풀어, 4천 년 떨어진 사건까지 같은 줄에 놓이게 됩니다.
+     * 그래서 "남은 사건들의 폭보다 3배 넘게 떨어진" 양 끝 값은 척도 계산에서 뺍니다.
+     * (행을 나누는 기준일 뿐이라, 빠진 사건도 표에는 그대로 나옵니다.)
+     */
     function toleranceFor(events) {
-      const years = events.map(e => e.year);
-      const span = Math.max(...years) - Math.min(...years);
+      const years = events.map(e => e.year).sort((a, b) => a - b);
+      let lo = 0, hi = years.length - 1;
+      while (hi - lo >= 2) {
+        if (years[lo + 1] - years[lo] > (years[hi] - years[lo + 1]) * 3) { lo++; continue; }
+        if (years[hi] - years[hi - 1] > (years[hi - 1] - years[lo]) * 3) { hi--; continue; }
+        break;
+      }
+      const span = years[hi] - years[lo];
       return Math.max(3, Math.round(span * 0.03));
     }
 
@@ -9389,12 +10028,15 @@
             <div style="margin-top: 8px; font-size: 13px; color: var(--color-primary-dark); font-weight: 600; background: var(--color-subtle-bg); padding: 8px 12px; border-radius: 8px; border:1px solid var(--color-border-subtle);">
               💡 시험 출제 팁: ${item.examPoint}
             </div>
+            ${quizTriggerHtml(item)}
           </div>
         `;
         listContainer.appendChild(el);
       });
     }
 
+    // 카드 안 미니 퀴즈 — 위임이라 필터·검색으로 다시 그려도 유지됩니다.
+    bindTimelineQuiz(listContainer);
     renderTimeline();
   }
 
