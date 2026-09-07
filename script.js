@@ -3553,22 +3553,28 @@
   }
 
   /**
-   * 문항 하나의 풀이 결과를 기록합니다.
-   * localStorage 는 항상 즉시 갱신하고(게스트 대응 + UI 즉시 반영),
-   * 로그인 상태면 Supabase 에도 비동기로 남깁니다.
-   * 네트워크가 실패해도 화면 흐름을 막지 않습니다.
+   * 세션 복원 전에 답한 문항을 잠시 담아두는 큐.
+   * currentUser 는 getSession() 이 resolve 된 뒤에야 채워지므로,
+   * 그 전에 답하면 로그인 상태인데도 DB 기록이 조용히 누락됩니다.
+   * 인증 상태가 확정될 때까지 여기 모았다가 한 번에 흘려보냅니다.
    */
-  function recordAttempt({ source, questionId, isCorrect, chosenIndex }) {
-    const stats = getUserStats();
-    if (source === 'quiz') {
-      stats.quizSolvedCount += 1;
-      if (isCorrect) stats.quizCorrectCount += 1;
-    } else {
-      stats.examSolvedCount += 1;
-      if (isCorrect) stats.examCorrectCount += 1;
-    }
-    saveUserStats(stats);
+  const MAX_PENDING_ATTEMPTS = 50;
+  let authResolved = false;
+  let pendingAttempts = [];
 
+  /** 인증 상태가 확정되는 유일한 통로. 첫 확정 시 큐를 비웁니다. */
+  function setCurrentUser(user) {
+    currentUser = user || null;
+    if (authResolved) return;
+    authResolved = true;
+    const queued = pendingAttempts;
+    pendingAttempts = [];
+    // 게스트로 확정됐다면 큐는 그대로 버립니다(비로그인 중 푼 문항이므로).
+    if (currentUser) queued.forEach(syncAttempt);
+  }
+
+  /** 실제 DB 쓰기. 인증이 확정되고 로그인 상태일 때만 호출됩니다. */
+  function syncAttempt({ source, questionId, isCorrect, chosenIndex }) {
     if (!sbClient || !currentUser) return;
 
     sbClient.from('quiz_attempts').insert({
@@ -3599,6 +3605,35 @@
         if (error) console.warn('wrong upsert error:', error.message);
       });
     }
+  }
+
+  /**
+   * 문항 하나의 풀이 결과를 기록합니다.
+   * localStorage 는 항상 즉시 갱신하고(게스트 대응 + UI 즉시 반영),
+   * 로그인 상태면 Supabase 에도 비동기로 남깁니다.
+   * 네트워크가 실패해도 화면 흐름을 막지 않습니다.
+   */
+  function recordAttempt({ source, questionId, isCorrect, chosenIndex }) {
+    const stats = getUserStats();
+    if (source === 'quiz') {
+      stats.quizSolvedCount += 1;
+      if (isCorrect) stats.quizCorrectCount += 1;
+    } else {
+      stats.examSolvedCount += 1;
+      if (isCorrect) stats.examCorrectCount += 1;
+    }
+    saveUserStats(stats);
+
+    if (!sbClient) return;
+
+    const attempt = { source, questionId, isCorrect, chosenIndex };
+    if (!authResolved) {
+      // 폭주 방지: 인증이 끝내 확정되지 않으면 오래된 것부터 버립니다.
+      if (pendingAttempts.length >= MAX_PENDING_ATTEMPTS) pendingAttempts.shift();
+      pendingAttempts.push(attempt);
+      return;
+    }
+    syncAttempt(attempt);
   }
 
   /** 로그인 상태면 DB 집계를, 아니면 localStorage 집계를 돌려줍니다. */
@@ -3681,29 +3716,43 @@
     }
 
     const authStatusText = document.getElementById('auth-status-text');
+
+    function paintAuthLabel() {
+      if (!authStatusText) return;
+      if (currentUser) {
+        const email = currentUser.email || '';
+        const nickname = currentUser.user_metadata?.name || currentUser.user_metadata?.nickname || email.split('@')[0];
+        authStatusText.textContent = nickname + '의 학습실';
+      } else {
+        authStatusText.textContent = '내 학습실';
+      }
+    }
+
     if (sbClient) {
-      sbClient.auth.getSession().then(({ data }) => {
-        if (data && data.session && data.session.user) {
-          currentUser = data.session.user;
-          if (authStatusText) {
-            const email = currentUser.email || '';
-            const nickname = currentUser.user_metadata?.name || currentUser.user_metadata?.nickname || email.split('@')[0];
-            authStatusText.textContent = nickname + '의 학습실';
-          }
-        }
-      });
+      // 세션 복원은 성공/실패/게스트 어느 쪽이든 반드시 인증 상태를 확정지어야
+      // 합니다. 확정되지 않으면 그 사이 답한 문항이 큐에 계속 쌓입니다.
+      sbClient.auth.getSession()
+        .then(({ data }) => setCurrentUser(data?.session?.user || null))
+        .catch(err => {
+          console.warn('session restore error:', err.message || err);
+          setCurrentUser(null);
+        })
+        .then(paintAuthLabel);
 
       sbClient.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        if (authStatusText) {
-          if (currentUser) {
-            const nickname = currentUser.user_metadata?.name || currentUser.user_metadata?.nickname || currentUser.email.split('@')[0];
-            authStatusText.textContent = nickname + '의 학습실';
-          } else {
-            authStatusText.textContent = '내 학습실';
-          }
-        }
+        setCurrentUser(session?.user || null);
+        paintAuthLabel();
       });
+
+      // 네트워크가 응답하지 않아도 큐가 무한정 커지지 않도록 하는 안전장치.
+      setTimeout(() => {
+        if (!authResolved) {
+          console.warn('auth state unresolved; treating as guest');
+          setCurrentUser(null);
+        }
+      }, 8000);
+    } else {
+      setCurrentUser(null);
     }
   }
 
@@ -4702,13 +4751,15 @@
     if (sbClient) {
       sbClient.auth.getSession().then(({ data }) => {
         if (data && data.session && data.session.user) {
-          currentUser = data.session.user;
+          setCurrentUser(data.session.user);
           renderDashboard();
         } else {
+          setCurrentUser(null);
           renderGuestView();
         }
       });
     } else {
+      setCurrentUser(null);
       renderGuestView();
     }
 
@@ -4725,7 +4776,7 @@
         try {
           const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
           if (error) throw error;
-          currentUser = data.user;
+          setCurrentUser(data.user);
           showToast('반갑습니다! 로그인되었습니다.');
           renderDashboard();
         } catch (err) {
@@ -4753,7 +4804,7 @@
           });
           if (error) throw error;
           showToast('가입을 환영합니다!');
-          currentUser = data.user;
+          setCurrentUser(data.user);
           renderDashboard();
         } catch (err) {
           setAuthMsg(err.message || '회원가입 중 오류가 발생했습니다.', true);
@@ -4782,7 +4833,7 @@
     if (logoutBtn) {
       logoutBtn.addEventListener('click', async () => {
         if (sbClient) await sbClient.auth.signOut();
-        currentUser = null;
+        setCurrentUser(null);
         showToast('로그아웃되었습니다.');
         renderGuestView();
       });
