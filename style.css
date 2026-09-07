@@ -2520,16 +2520,63 @@ button {
   color: #FDE68A;
 }
 
-/* 좌우 2열 — 비교가 목적이므로 모바일에서도 2열을 유지합니다 */
-.cmp-cols {
+/* 안내 문구 — 같은 줄의 의미를 명시합니다 */
+.cmp-guide {
+  font-size: 12.5px;
+  color: var(--color-text-soft);
+  line-height: 1.55;
+  background: var(--color-subtle-bg);
+  border: 1.5px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  word-break: keep-all;
+}
+
+.cmp-guide strong {
+  color: var(--color-primary-dark);
+  font-weight: 800;
+}
+
+/* 연도순 행 — 세로 위치가 곧 시간입니다 */
+.cmp-rows {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cmp-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  position: relative;
+  align-items: stretch;
+}
+
+.cmp-cell {
+  min-width: 0;
+  display: flex;
+}
+
+.cmp-cell > .cmp-item {
+  width: 100%;
+}
+
+/* 사건이 없는 쪽은 조용히 비워 둡니다 */
+.cmp-cell-blank {
+  width: 100%;
+  min-height: 22px;
+  border-radius: var(--radius-sm);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-border-subtle) 0 5px,
+    transparent 5px 10px
+  );
+  opacity: 0.5;
 }
 
 /* 가운데 구분선 */
-.cmp-cols::before {
+.cmp-rows::before {
   content: '';
   position: absolute;
   left: 50%;
@@ -2543,13 +2590,6 @@ button {
     transparent 6px 12px
   );
   pointer-events: none;
-}
-
-.cmp-col {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
 }
 
 .cmp-item {
@@ -2567,12 +2607,12 @@ button {
   transform: translateY(-2px);
 }
 
-.cmp-col-korea .cmp-item {
+.cmp-cell-korea .cmp-item {
   border-left-color: #B45309;
   background: #FFFDFA;
 }
 
-.cmp-col-world .cmp-item {
+.cmp-cell-world .cmp-item {
   border-left-color: #0E7490;
   background: #FBFDFE;
 }
@@ -2593,7 +2633,7 @@ button {
   letter-spacing: -0.02em;
 }
 
-.cmp-col-world .cmp-item-year {
+.cmp-cell-world .cmp-item-year {
   color: #0E7490;
 }
 
@@ -2623,17 +2663,9 @@ button {
   word-break: keep-all;
 }
 
-.cmp-empty {
-  font-size: 12.5px;
-  color: var(--color-text-light);
-  text-align: center;
-  padding: 18px 8px;
-  border: 1.5px dashed var(--color-border-subtle);
-  border-radius: var(--radius-sm);
-}
 
 @media (max-width: 560px) {
-  .cmp-cols {
+  .cmp-row {
     gap: 8px;
   }
 

@@ -4033,14 +4033,43 @@
         </div>`;
     }
 
+    /**
+     * 같은 구간 안에서 두 계열을 연도순으로 병합해 "행"을 만듭니다.
+     * 세로 위치가 곧 시간이 되도록 하는 게 목적입니다.
+     * 두 사건이 tol 년 이내로 가까울 때만 한 행에 나란히 놓고,
+     * 그렇지 않으면 각자 행을 차지하고 반대쪽은 비웁니다.
+     * (예전에는 두 열을 따로 쌓기만 해서, 고대 구간에서 2800년 떨어진
+     *  사건이 나란히 보이는 문제가 있었습니다.)
+     */
+    function buildCompareRows(korea, world, tol) {
+      const rows = [];
+      let i = 0, j = 0;
+      while (i < korea.length || j < world.length) {
+        if (i >= korea.length) { rows.push([null, world[j++]]); continue; }
+        if (j >= world.length) { rows.push([korea[i++], null]); continue; }
+        const a = korea[i].year, b = world[j].year;
+        if (Math.abs(a - b) <= tol) rows.push([korea[i++], world[j++]]);
+        else if (a < b) rows.push([korea[i++], null]);
+        else rows.push([null, world[j++]]);
+      }
+      return rows;
+    }
+
+    /** 구간이 넓을수록 "비슷한 시기"의 폭도 넓어집니다(고대 vs 현대). */
+    function toleranceFor(events) {
+      const years = events.map(e => e.year);
+      const span = Math.max(...years) - Math.min(...years);
+      return Math.max(3, Math.round(span * 0.03));
+    }
+
     function renderCompare(filtered) {
       const korea = filtered.filter(e => e.type === 'korea');
       const world = filtered.filter(e => e.type === 'world');
 
       const bands = COMPARE_BANDS.map(b => ({
         band: b,
-        k: korea.filter(e => e.year >= b.from && e.year <= b.to),
-        w: world.filter(e => e.year >= b.from && e.year <= b.to)
+        k: korea.filter(e => e.year >= b.from && e.year <= b.to).sort((x, y) => x.year - y.year),
+        w: world.filter(e => e.year >= b.from && e.year <= b.to).sort((x, y) => x.year - y.year)
       })).filter(x => x.k.length || x.w.length);
 
       if (!bands.length) {
@@ -4054,22 +4083,30 @@
           <span class="cmp-legend-divider"></span>
           <span class="cmp-legend-w">🌍 세계사</span>
         </div>
-      ` + bands.map(({ band, k, w }) => `
-        <section class="cmp-band">
-          <div class="cmp-band-head">
-            <span class="cmp-band-title">${band.label}</span>
-            <span class="cmp-band-range">${band.range}</span>
-          </div>
-          <div class="cmp-cols">
-            <div class="cmp-col cmp-col-korea">
-              ${k.length ? k.map(compareItemHtml).join('') : '<div class="cmp-empty">이 시기 사건 없음</div>'}
+        <p class="cmp-guide">
+          위에서 아래로 시간 순입니다. <strong>같은 줄에 나란히 있으면 비슷한 시기</strong>에 일어난 일이고,
+          한쪽이 비어 있으면 그 무렵 반대쪽에는 표시할 사건이 없다는 뜻이에요.
+        </p>
+      ` + bands.map(({ band, k, w }) => {
+        const tol = toleranceFor([...k, ...w]);
+        const rows = buildCompareRows(k, w, tol);
+        return `
+          <section class="cmp-band">
+            <div class="cmp-band-head">
+              <span class="cmp-band-title">${band.label}</span>
+              <span class="cmp-band-range">${band.range}</span>
             </div>
-            <div class="cmp-col cmp-col-world">
-              ${w.length ? w.map(compareItemHtml).join('') : '<div class="cmp-empty">이 시기 사건 없음</div>'}
+            <div class="cmp-rows">
+              ${rows.map(([ke, we]) => `
+                <div class="cmp-row">
+                  <div class="cmp-cell cmp-cell-korea">${ke ? compareItemHtml(ke) : '<div class="cmp-cell-blank" aria-hidden="true"></div>'}</div>
+                  <div class="cmp-cell cmp-cell-world">${we ? compareItemHtml(we) : '<div class="cmp-cell-blank" aria-hidden="true"></div>'}</div>
+                </div>
+              `).join('')}
             </div>
-          </div>
-        </section>
-      `).join('');
+          </section>
+        `;
+      }).join('');
     }
 
     function emptyResultHtml() {
