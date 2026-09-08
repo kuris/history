@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대항해 탐험 - 세계사 항해 게임 | 역사야 놀자</title>
+  <meta name="description" content="리스본에서 캘리컷까지 항해하며 대항해시대를 쉽게 배우는 텍스트 기반 세계사 학습 게임입니다.">
+  <meta name="keywords" content="대항해시대, 세계사 게임, 역사 게임, 바스쿠 다 가마, 캘리컷, 희망봉, 초등 세계사">
+  <link rel="canonical" href="https://history.chatgpts.kr/voyage">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="역사야 놀자">
+  <meta property="og:title" content="대항해 탐험 - 세계사 항해 게임 | 역사야 놀자">
+  <meta property="og:description" content="리스본에서 캘리컷까지 항해하며 대항해시대를 쉽게 배우는 텍스트 기반 세계사 학습 게임입니다.">
+  <meta property="og:url" content="https://history.chatgpts.kr/voyage">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%E2%9B%B5%3C%2Ftext%3E%3C%2Fsvg%3E">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/style.css?v=20260907_09">
+  <link rel="stylesheet" href="/css/voyage.css">
+</head>
+<body>
+  <div class="wrap">
+    <!-- 사이트 헤더 -->
+    <header class="site-head">
+      <a href="index.html" class="brand-logo">
+        <span class="logo-char">史</span>
+        <span>역사야 <span class="dot">놀자!</span></span>
+      </a>
+      <div class="header-right">
+        <a href="login.html" class="family-btn" id="header-auth-btn">
+          <span>👤</span> <span id="auth-status-text">내 학습실</span>
+        </a>
+        <div class="family-nav-wrap">
+          <button type="button" class="family-btn" id="family-btn">
+            다른 놀자 서비스 ▾
+          </button>
+          <div class="family-dropdown" id="family-dropdown">
+            <a href="https://hanja.chatgpts.kr" target="_blank" rel="noopener">📖 한자야 놀자</a>
+            <a href="https://voca.chatgpts.kr" target="_blank" rel="noopener">⚡ 단어야 놀자</a>
+            <a href="https://fortune.chatgpts.kr" target="_blank" rel="noopener">🔮 운세야 놀자</a>
+            <a href="https://mindtest.chatgpts.kr" target="_blank" rel="noopener">🧠 마인드테스트</a>
+            <a href="https://chatgpts.kr" target="_blank" rel="noopener">🏠 chatgpts.kr</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 상단 스크롤 메뉴 -->
+    <nav class="nav-scroll" aria-label="메인 메뉴">
+      <a href="index.html" class="nav-chip">🏠 홈</a>
+      <a href="korea.html" class="nav-chip">📜 한국사</a>
+      <a href="world.html" class="nav-chip">🌍 세계사</a>
+      <a href="voyage.html" class="nav-chip active">⛵ 대항해 탐험</a>
+      <a href="timeline.html" class="nav-chip">⏳ 연표 보기</a>
+      <a href="map.html" class="nav-chip">🗺️ 역사 지도</a>
+      <a href="exam.html" class="nav-chip">📝 기출변형</a>
+      <a href="print.html" class="nav-chip">🖨️ 연표 프린트</a>
+      <a href="quiz.html" class="nav-chip">🎯 역사 퀴즈</a>
+      <a href="login.html" class="nav-chip">👤 내 학습실</a>
+    </nav>
+
+    <!-- 메인 콘텐츠 영역 -->
+    <main class="voyage-container">
+      
+      <!-- 1. 히어로 배너 -->
+      <section class="voyage-hero">
+        <span class="voyage-badge"><i class="fa-solid fa-compass"></i> 세계사 체험 탐험 게임</span>
+        <h1 class="voyage-title">⛵ 대항해 탐험: 인도로 가는 바닷길</h1>
+        <p class="voyage-desc">
+          15세기 리스본의 젊은 선장이 되어 미지의 바다로 출항하세요!<br>
+          식량과 배를 관리하고 결단을 내리며 희망봉을 넘어 인도의 <strong>캘리컷</strong>까지 항해해 보세요.
+        </p>
+        <button type="button" class="voyage-start-btn" id="voyage-hero-start-btn">
+          <i class="fa-solid fa-anchor"></i> 탐험 시작하기
+        </button>
+      </section>
+
+      <!-- 2. 항해 상태 표시 바 (HUD) -->
+      <section class="voyage-hud" id="voyage-hud-area" aria-label="항해 상태">
+        <div class="voyage-hud-top">
+          <div class="voyage-current-loc">
+            <span>📍 현재 기착지:</span>
+            <span class="voyage-loc-pill" id="voyage-current-loc-pill">리스본</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="voyage-best-score">
+              최고 명성 기록: <strong id="voyage-best-score-val">—</strong>
+            </div>
+            <div class="voyage-step-indicator" id="voyage-step-indicator">1 / 6</div>
+          </div>
+        </div>
+
+        <div class="voyage-stats-grid">
+          <!-- 식량 -->
+          <div class="voyage-stat-card" id="card-food">
+            <div class="voyage-stat-head">
+              <span class="voyage-stat-label">🍞 식량</span>
+              <span class="voyage-stat-value" id="val-food">100</span>
+            </div>
+            <div class="voyage-stat-bar-bg">
+              <div class="voyage-stat-bar bar-food" id="bar-food" style="width: 83%;"></div>
+            </div>
+          </div>
+
+          <!-- 배 내구도 -->
+          <div class="voyage-stat-card" id="card-durability">
+            <div class="voyage-stat-head">
+              <span class="voyage-stat-label">🛡️ 배 내구도</span>
+              <span class="voyage-stat-value" id="val-durability">100</span>
+            </div>
+            <div class="voyage-stat-bar-bg">
+              <div class="voyage-stat-bar bar-durability" id="bar-durability" style="width: 83%;"></div>
+            </div>
+          </div>
+
+          <!-- 선원 사기 -->
+          <div class="voyage-stat-card" id="card-morale">
+            <div class="voyage-stat-head">
+              <span class="voyage-stat-label">🔥 선원 사기</span>
+              <span class="voyage-stat-value" id="val-morale">80</span>
+            </div>
+            <div class="voyage-stat-bar-bg">
+              <div class="voyage-stat-bar bar-morale" id="bar-morale" style="width: 80%;"></div>
+            </div>
+          </div>
+
+          <!-- 명성 -->
+          <div class="voyage-stat-card" id="card-fame">
+            <div class="voyage-stat-head">
+              <span class="voyage-stat-label">⭐ 명성</span>
+              <span class="voyage-stat-value" id="val-fame">0</span>
+            </div>
+            <div class="voyage-stat-bar-bg">
+              <div class="voyage-stat-bar bar-fame" id="bar-fame" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 고지도 캔버스 UI -->
+      <section class="voyage-map-card" aria-label="항해 지도">
+        <div class="voyage-map-header">
+          <div class="voyage-map-title">
+            <i class="fa-solid fa-map-location-dot"></i> 15세기 신항로 탐험 지도
+          </div>
+          <div class="voyage-map-legend">
+            <span class="legend-item"><span class="legend-dot dot-passed"></span> 지나온 길</span>
+            <span class="legend-item"><span class="legend-dot dot-current"></span> 현재 위치</span>
+            <span class="legend-item"><span class="legend-dot dot-target"></span> 목적지</span>
+          </div>
+        </div>
+
+        <div class="voyage-map-wrapper">
+          <!-- 교육용 간이 SVG 지도 (대륙 실루엣 및 항로 점선) -->
+          <svg class="voyage-map-svg" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- 대륙 채우기 그라디언트 (고지도 양피지 톤) -->
+              <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#E2D4B7"/>
+                <stop offset="100%" stop-color="#D1BFA0"/>
+              </linearGradient>
+            </defs>
+
+            <!-- 바다 파도 장식 라인들 -->
+            <path d="M 60 120 Q 90 115 120 120 Q 150 125 180 120" stroke="#BAE6FD" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M 80 340 Q 110 335 140 340 Q 170 345 200 340" stroke="#BAE6FD" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <path d="M 580 320 Q 610 315 640 320 Q 670 325 700 320" stroke="#BAE6FD" stroke-width="1.2" fill="none" opacity="0.6"/>
+
+            <!-- 바다 이름 텍스트 -->
+            <text x="140" y="220" font-family="'Noto Serif KR', serif" font-size="14" fill="#0284C7" opacity="0.35" font-weight="700" letter-spacing="4">대 서 양</text>
+            <text x="540" y="360" font-family="'Noto Serif KR', serif" font-size="15" fill="#0284C7" opacity="0.35" font-weight="700" letter-spacing="4">인 도 양</text>
+
+            <!-- 나침반 로즈 장식 (Compass Rose) -->
+            <g transform="translate(680, 70)" opacity="0.45">
+              <circle cx="0" cy="0" r="30" fill="none" stroke="#D97706" stroke-width="1.5" stroke-dasharray="3,3"/>
+              <circle cx="0" cy="0" r="22" fill="none" stroke="#92400E" stroke-width="1"/>
+              <polygon points="0,-28 5,-8 0,0 -5,-8" fill="#B45309"/>
+              <polygon points="0,28 5,8 0,0 -5,8" fill="#D97706"/>
+              <polygon points="28,0 8,5 0,0 8,-5" fill="#D97706"/>
+              <polygon points="-28,0 -8,5 0,0 -8,-5" fill="#D97706"/>
+              <text x="0" y="-32" font-family="sans-serif" font-size="10" font-weight="900" fill="#78350F" text-anchor="middle">N</text>
+            </g>
+
+            <!-- 대륙 실루엣: 유럽 (이베리아 반도 및 서유럽) -->
+            <path d="M 130 0 L 260 0 L 250 50 L 230 65 L 200 60 L 176 90 L 150 85 L 140 60 L 130 40 Z" fill="url(#landGrad)" stroke="#B8A381" stroke-width="1.5"/>
+            <text x="195" y="45" font-size="11" font-weight="800" fill="#78350F" opacity="0.6">유럽</text>
+
+            <!-- 대륙 실루엣: 아프리카 대륙 전체 -->
+            <path d="M 170 120 
+                     C 190 110, 260 110, 310 130 
+                     C 350 145, 360 190, 420 200 
+                     C 460 210, 450 240, 430 260 
+                     C 420 280, 430 330, 400 396 
+                     C 380 405, 350 380, 330 340 
+                     C 310 300, 270 290, 240 280 
+                     C 192 247, 160 220, 160 180 
+                     C 150 150, 160 130, 170 120 Z" 
+                  fill="url(#landGrad)" stroke="#B8A381" stroke-width="1.8"/>
+            <text x="280" y="235" font-size="16" font-weight="800" fill="#78350F" opacity="0.55" letter-spacing="3">아프리카</text>
+
+            <!-- 대륙 실루엣: 아라비아 반도 -->
+            <path d="M 450 130 C 480 130, 520 140, 540 170 C 530 195, 490 200, 460 180 Z" fill="url(#landGrad)" stroke="#B8A381" stroke-width="1.2"/>
+            <text x="475" y="165" font-size="10" font-weight="700" fill="#78350F" opacity="0.6">아라비아</text>
+
+            <!-- 대륙 실루엣: 인도 아대륙 -->
+            <path d="M 640 100 L 740 100 L 730 140 L 704 195 L 680 190 L 655 140 Z" fill="url(#landGrad)" stroke="#B8A381" stroke-width="1.5"/>
+            <text x="680" y="135" font-size="13" font-weight="800" fill="#78350F" opacity="0.6">인도</text>
+
+            <!-- 전체 예정 항로 점선 (연한 회갈색) -->
+            <path id="voyage-base-path" 
+                  d="M 176 90 
+                     C 145 120, 130 140, 136 153 
+                     C 142 190, 170 210, 192 247 
+                     C 225 320, 280 390, 400 396 
+                     C 460 390, 510 320, 520 256 
+                     C 550 200, 640 170, 704 162" 
+                  fill="none" stroke="#D97706" stroke-width="2.5" stroke-dasharray="6,6" opacity="0.45"/>
+
+            <!-- 이미 지나온 항로 실선 (황금색 강조, stroke-dashoffset 애니메이션 연동) -->
+            <path id="voyage-passed-path" 
+                  d="M 176 90 
+                     C 145 120, 130 140, 136 153 
+                     C 142 190, 170 210, 192 247 
+                     C 225 320, 280 390, 400 396 
+                     C 460 390, 510 320, 520 256 
+                     C 550 200, 640 170, 704 162" 
+                  fill="none" stroke="#B45309" stroke-width="3.5" 
+                  stroke-dasharray="880" stroke-dashoffset="880" stroke-linecap="round"/>
+          </svg>
+
+          <!-- 6개 거점 마커 오버레이 (절대배치 % 기반) -->
+          <div class="voyage-map-points">
+            
+            <!-- 1. 리스본 (22%, 20%) -->
+            <div class="voyage-port-marker current" id="marker-lisbon" style="left: 22%; top: 20%;">
+              <span class="port-pin"></span>
+              <span class="port-label">1. 리스본 🇵🇹</span>
+            </div>
+
+            <!-- 2. 카나리아 제도 (17%, 34%) -->
+            <div class="voyage-port-marker" id="marker-canary" style="left: 17%; top: 34%;">
+              <span class="port-pin"></span>
+              <span class="port-label">2. 카나리아 제도</span>
+            </div>
+
+            <!-- 3. 아프리카 서해안 (24%, 55%) -->
+            <div class="voyage-port-marker" id="marker-west_africa" style="left: 24%; top: 55%;">
+              <span class="port-pin"></span>
+              <span class="port-label">3. 서아프리카</span>
+            </div>
+
+            <!-- 4. 희망봉 (50%, 88%) -->
+            <div class="voyage-port-marker" id="marker-cape_good_hope" style="left: 50%; top: 88%;">
+              <span class="port-pin"></span>
+              <span class="port-label">4. 희망봉 🌊</span>
+            </div>
+
+            <!-- 5. 동아프리카 해안 (65%, 57%) -->
+            <div class="voyage-port-marker" id="marker-east_africa" style="left: 65%; top: 57%;">
+              <span class="port-pin"></span>
+              <span class="port-label">5. 동아프리카(말린디)</span>
+            </div>
+
+            <!-- 6. 캘리컷 (88%, 36%) -->
+            <div class="voyage-port-marker" id="marker-calicut" style="left: 88%; top: 36%;">
+              <span class="port-pin"></span>
+              <span class="port-label">6. 캘리컷 🇮🇳</span>
+            </div>
+
+            <!-- 움직이는 배 아이콘 (초기 위치: 리스본) -->
+            <div class="voyage-ship" id="voyage-ship" style="left: 22%; top: 20%;">
+              <span class="voyage-ship-icon">⛵</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 상황 설명 & 선택지 카드 -->
+      <section class="voyage-action-card" aria-label="선장의 결단">
+        <div class="voyage-scene-head">
+          <span class="voyage-scene-tag" id="voyage-scene-tag">항해 1단계 · 포르투갈</span>
+          <span style="font-size:0.85rem;color:#78716C;"><i class="fa-regular fa-compass"></i> 항해 일지</span>
+        </div>
+
+        <h2 class="voyage-scene-title" id="voyage-scene-title">제1구간: 출항의 도시 리스본 항구</h2>
+        <p class="voyage-scene-desc" id="voyage-scene-desc">
+          15세기 후반 포르투갈 리스본 항구. 국왕의 후원을 받아 인도로 가는 새로운 바닷길을 찾기 위해 탐험선이 닻을 올립니다.
+        </p>
+
+        <!-- 선택 결과 알림 배너 (선택 후 등장) -->
+        <div class="voyage-result-banner" id="voyage-result-banner">
+          <div class="voyage-result-icon">📜</div>
+          <div class="voyage-result-content">
+            <div class="voyage-result-title" id="voyage-result-title">선장의 결단과 결과</div>
+            <div class="voyage-result-text" id="voyage-result-text">선택지 결과 텍스트가 여기에 표시됩니다.</div>
+            <div class="voyage-result-deltas" id="voyage-result-deltas"></div>
+          </div>
+        </div>
+
+        <!-- 선택지 목록 -->
+        <div class="voyage-choices-title">
+          <i class="fa-solid fa-feather-pointed"></i> 선장의 결단을 선택하세요:
+        </div>
+        <div class="voyage-choices-list" id="voyage-choices-list">
+          <!-- JS에서 동적으로 버튼 추가 -->
+        </div>
+
+        <!-- 다음 항해지로 이동 버튼 (선택 완료 후 등장) -->
+        <div class="voyage-next-row" id="voyage-next-row">
+          <button type="button" class="voyage-next-btn" id="voyage-next-btn">
+            <i class="fa-solid fa-arrow-right"></i> 다음 항해지로 이동
+          </button>
+        </div>
+      </section>
+
+      <!-- 5. 역사 지식 카드 (아이들의 눈높이에 맞춘 세계사 해설) -->
+      <section class="voyage-history-card" aria-label="역사 지식">
+        <div class="history-card-icon">
+          <i class="fa-solid fa-book-bookmark"></i>
+        </div>
+        <div class="history-card-body">
+          <div class="history-card-tag" id="voyage-history-tag">역사 탐구 돋보기 · 리스본</div>
+          <h3 class="history-card-title" id="voyage-history-title">리스본과 신항로 개척의 서막</h3>
+          <p class="history-card-text" id="voyage-history-text">
+            포르투갈은 신항로 개척에 앞장섰습니다. 유럽 사람들은 아시아의 향신료와 물건을 얻기 위해 새로운 바닷길을 찾으려 했습니다.
+          </p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 6. 최종 엔딩 모달 (캘리컷 도착 시) -->
+    <div class="voyage-ending-overlay" id="voyage-ending-overlay" role="dialog" aria-modal="true" aria-labelledby="ending-modal-title">
+      <div class="voyage-ending-card">
+        <span class="ending-badge">🏆</span>
+        <h2 class="ending-title" id="ending-modal-title">축하합니다! 신항로 개척 성공!</h2>
+        <p class="ending-subtitle">
+          기나긴 고난을 뚫고 마침내 인도 <strong>캘리컷</strong>에 닻을 내렸습니다!
+        </p>
+
+        <!-- 최종 점수판 -->
+        <div class="ending-scoreboard">
+          <div class="ending-score-hero">
+            <div>
+              <div class="ending-score-label">최종 획득 명성</div>
+              <div style="font-size:0.86rem;color:#78350F;margin-top:2px;" id="ending-title-badge">👑 전설의 대제독</div>
+            </div>
+            <div class="ending-score-val" id="ending-fame-val">35점</div>
+          </div>
+
+          <div class="ending-stats-summary">
+            <div class="summary-stat-box">
+              <span>남은 식량</span>
+              <strong id="ending-food-val">105</strong>
+            </div>
+            <div class="summary-stat-box">
+              <span>남은 배 내구도</span>
+              <strong id="ending-durability-val">95</strong>
+            </div>
+            <div class="summary-stat-box">
+              <span>최종 선원 사기</span>
+              <strong id="ending-morale-val">85</strong>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;font-size:0.84rem;color:#78716C;text-align:center;" id="ending-best-score-row">
+            <!-- JS에서 최고 점수 여부 안내 -->
+          </div>
+        </div>
+
+        <!-- 오늘 배운 핵심 역사 정리 -->
+        <div style="background:#FFFDF8;border:1px solid #FDE68A;border-radius:14px;padding:12px 16px;margin-bottom:18px;text-align:left;">
+          <div style="font-weight:800;color:#78350F;font-size:0.9rem;margin-bottom:6px;">
+            <i class="fa-solid fa-graduation-cap"></i> 오늘 배운 역사 핵심 요약
+          </div>
+          <ul style="margin:0;padding-left:18px;font-size:0.88rem;color:#451A03;line-height:1.65;">
+            <li>포르투갈은 아시아 향신료를 찾아 아프리카를 돌아가는 신항로를 개척했습니다.</li>
+            <li>아프리카 남단의 <strong>희망봉</strong>을 돌아 거대한 인도양으로 진출했습니다.</li>
+            <li><strong>바스쿠 다 가마</strong>는 1498년 인도 캘리컷에 도달하여 바닷길을 완성했습니다.</li>
+          </ul>
+        </div>
+
+        <!-- 교육적 균형 설명 문구 (필수 요구사항) -->
+        <div class="ending-balance-notice">
+          <div class="balance-notice-head">
+            <i class="fa-solid fa-scale-balanced"></i> 함께 생각해보는 역사 이야기
+          </div>
+          <p class="balance-notice-text">
+            대항해시대는 새로운 바닷길과 활발한 동서양 교류를 만든 시대였지만, 
+            동시에 식민지 지배와 원주민 피해가 발생한 역사적 그림자도 함께 가지고 있습니다. 
+            역사는 한쪽의 영웅적 시각만이 아니라 여러 관점에서 균형 있게 바라보는 것이 중요합니다.
+          </p>
+        </div>
+
+        <!-- 엔딩 액션 버튼들 -->
+        <div class="ending-actions">
+          <button type="button" class="ending-btn-main" id="voyage-restart-btn">
+            <i class="fa-solid fa-rotate-right"></i> 다시 항해 도전하기
+          </button>
+          <div class="ending-sub-actions">
+            <a href="world.html" class="ending-btn-sub">
+              <i class="fa-solid fa-earth-americas"></i> 세계사 연표 보기
+            </a>
+            <a href="quiz.html" class="ending-btn-sub">
+              <i class="fa-solid fa-bullseye"></i> 역사 퀴즈 풀기
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 사이트 푸터 -->
+    <footer class="site-foot">
+      <div class="disclaimer-box">
+        <strong>※ 참고용 학습자료 안내</strong>
+        역사야 놀자의 콘텐츠는 학생들의 역사 흐름 이해와 시험 대비 복습을 돕기 위한 참고용 학습자료입니다.
+        실제 시험 출제 내용과 완전히 일치하지 않을 수 있으며, 교과서와 학교 수업 자료를 함께 참고해 주세요.
+      </div>
+      <nav class="footer-nav-links" aria-label="푸터 링크">
+        <a href="index.html">홈</a> ·
+        <a href="korea.html">한국사</a> ·
+        <a href="world.html">세계사</a> ·
+        <a href="voyage.html">대항해 탐험</a> ·
+        <a href="timeline.html">연표 보기</a> ·
+        <a href="exam.html">기출변형 문제</a> ·
+        <a href="print.html">연표 프린트</a> ·
+        <a href="quiz.html">역사 퀴즈</a> ·
+        <a href="login.html">내 학습실</a>
+      </nav>
+      <div class="footer-copy">
+        <p>© 2026 역사야 놀자 (history.chatgpts.kr) · All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 대항해 탐험 전용 스크립트 -->
+  <script src="/js/voyage.js"></script>
+
+  <!-- 화면 조회 로그 수집 (관리자 통계 전용 / 사용자 기능과 무관) -->
+  <script defer src="/js/supabase-config.js"></script>
+  <script defer src="/js/track.js" data-service="history"></script>
+</body>
+</html>

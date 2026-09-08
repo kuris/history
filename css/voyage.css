@@ -1,0 +1,943 @@
+/* ==========================================================================
+   역사야 놀자 (history.chatgpts.kr) - 대항해 탐험 (Voyage) 스타일
+   따뜻한 양피지 고지도 감성, 부드러운 항해 애니메이션, 반응형 카드 UI
+   ========================================================================== */
+
+/* ---------- 1. 전체 레이아웃 & 히어로 ---------- */
+.voyage-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 10px 16px 40px;
+}
+
+.voyage-hero {
+  text-align: center;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%);
+  border: 2px solid #F59E0B;
+  border-radius: var(--radius-lg, 24px);
+  padding: 28px 20px;
+  box-shadow: 0 8px 24px rgba(180, 83, 9, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.voyage-hero::before {
+  content: '🧭';
+  position: absolute;
+  right: -15px;
+  bottom: -15px;
+  font-size: 5rem;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.voyage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #92400E;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  margin-bottom: 12px;
+  letter-spacing: 0.03em;
+}
+
+.voyage-title {
+  font-family: var(--font-display, 'Jua', sans-serif);
+  font-size: 2.1rem;
+  color: #78350F;
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+
+.voyage-desc {
+  font-size: 1.02rem;
+  color: #451A03;
+  margin: 0 0 18px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.voyage-start-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+  color: #fff;
+  border: none;
+  font-family: var(--font-main, sans-serif);
+  font-size: 1.12rem;
+  font-weight: 800;
+  padding: 14px 34px;
+  border-radius: 9999px;
+  box-shadow: 0 6px 18px rgba(180, 83, 9, 0.28);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.voyage-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(180, 83, 9, 0.38);
+}
+
+.voyage-start-btn:active {
+  transform: translateY(0);
+}
+
+/* ---------- 2. 상태 표시 바 (HUD) ---------- */
+.voyage-hud {
+  background: #fff;
+  border: 1.5px solid #FDE68A;
+  border-radius: var(--radius-md, 18px);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(120, 53, 15, 0.05);
+}
+
+.voyage-hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed #FDE68A;
+}
+
+.voyage-current-loc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: #78350F;
+  font-size: 1.05rem;
+}
+
+.voyage-loc-pill {
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  border: 1px solid #FDE68A;
+}
+
+.voyage-step-indicator {
+  font-weight: 800;
+  color: #92400E;
+  background: #FFFBEB;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  border: 1px solid #FCD34D;
+}
+
+.voyage-best-score {
+  font-size: 0.86rem;
+  color: #78716C;
+  font-weight: 700;
+}
+
+.voyage-best-score strong {
+  color: #D97706;
+}
+
+/* 상태 그리드 (식량, 내구도, 사기, 명성) */
+.voyage-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.voyage-stat-card {
+  background: #FFFDF8;
+  border: 1px solid #FEF3C7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.voyage-stat-card.flash-up {
+  animation: statFlashGreen 0.6s ease;
+}
+.voyage-stat-card.flash-down {
+  animation: statFlashRed 0.6s ease;
+}
+
+@keyframes statFlashGreen {
+  0% { background: #ECFDF5; border-color: #34D399; }
+  100% { background: #FFFDF8; border-color: #FEF3C7; }
+}
+
+@keyframes statFlashRed {
+  0% { background: #FEF2F2; border-color: #F87171; }
+  100% { background: #FFFDF8; border-color: #FEF3C7; }
+}
+
+.voyage-stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.voyage-stat-label {
+  font-size: 0.82rem;
+  color: #78716C;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.voyage-stat-value {
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: #292524;
+}
+
+.voyage-stat-bar-bg {
+  height: 7px;
+  background: #E7E5E4;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.voyage-stat-bar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s ease-out;
+}
+
+.bar-food { background: linear-gradient(90deg, #F59E0B, #10B981); }
+.bar-durability { background: linear-gradient(90deg, #60A5FA, #2563EB); }
+.bar-morale { background: linear-gradient(90deg, #F43F5E, #FB7185); }
+.bar-fame { background: linear-gradient(90deg, #F59E0B, #D97706); }
+
+/* ---------- 3. 고지도 UI 영역 ---------- */
+.voyage-map-card {
+  background: #FFF;
+  border: 2px solid #FCD34D;
+  border-radius: var(--radius-lg, 24px);
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 28px rgba(120, 53, 15, 0.08);
+  overflow: hidden;
+}
+
+.voyage-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.voyage-map-title {
+  font-weight: 800;
+  font-size: 0.96rem;
+  color: #78350F;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.voyage-map-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: #78716C;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-passed { background: #059669; }
+.dot-current { background: #D97706; box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.35); }
+.dot-target { background: #D6D3D1; }
+
+/* 지도 컨테이너 (반응형 16:9 뷰) */
+.voyage-map-wrapper {
+  position: relative;
+  width: 100%;
+  background: #E8F4F8; /* 부드러운 고지도 바다 색상 */
+  border-radius: 16px;
+  border: 1.5px solid #BAE6FD;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  /* 양피지 텍스처 느낌의 은은한 배경 */
+  background-image: 
+    radial-gradient(ellipse at center, rgba(254, 243, 199, 0.4) 0%, rgba(224, 242, 254, 0.6) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(186, 230, 253, 0.25) 39px),
+    repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(186, 230, 253, 0.25) 39px);
+}
+
+.voyage-map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+/* 지도 지점 마커 컨테이너 (절대배치 오버레이) */
+.voyage-map-points {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.voyage-port-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  transition: transform 0.2s ease;
+  z-index: 5;
+}
+
+.voyage-port-marker:hover {
+  transform: translate(-50%, -55%);
+}
+
+.port-pin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #A8A29E;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.port-label {
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #D6D3D1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #57534E;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  pointer-events: none;
+}
+
+/* 상태별 마커 */
+.voyage-port-marker.passed .port-pin {
+  background: #059669;
+}
+.voyage-port-marker.passed .port-label {
+  border-color: #A7F3D0;
+  color: #065F46;
+  background: #ECFDF5;
+}
+
+.voyage-port-marker.current .port-pin {
+  background: #D97706;
+  width: 20px;
+  height: 20px;
+  box-shadow: 0 0 0 5px rgba(217, 119, 6, 0.35);
+  animation: pulseMarker 1.6s infinite ease-in-out;
+}
+.voyage-port-marker.current .port-label {
+  border-color: #F59E0B;
+  color: #78350F;
+  background: #FEF3C7;
+  font-weight: 900;
+  font-size: 0.8rem;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.2);
+}
+
+@keyframes pulseMarker {
+  0% { box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(217, 119, 6, 0.1); }
+  100% { box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.5); }
+}
+
+/* 배 아이콘 (부드러운 이동 + 파도 흔들림) */
+.voyage-ship {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  z-index: 10;
+  pointer-events: none;
+  transition: left 1.25s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              top 1.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voyage-ship-icon {
+  font-size: 2.2rem;
+  display: inline-block;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+  animation: shipBob 2.4s ease-in-out infinite;
+}
+
+@keyframes shipBob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-5px) rotate(4deg); }
+}
+
+/* ---------- 4. 상황 설명 및 선택지 카드 ---------- */
+.voyage-action-card {
+  background: #FFF;
+  border: 2px solid #FDE68A;
+  border-radius: var(--radius-lg, 24px);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(120, 53, 15, 0.06);
+}
+
+.voyage-scene-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.voyage-scene-tag {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #B45309;
+  background: #FEF3C7;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #FDE68A;
+}
+
+.voyage-scene-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #78350F;
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.voyage-scene-desc {
+  font-size: 1.05rem;
+  color: #292524;
+  line-height: 1.75;
+  margin-bottom: 20px;
+  word-break: keep-all;
+}
+
+/* 결과 알림창 (선택 후 노출) */
+.voyage-result-banner {
+  background: #FEF3C7;
+  border: 1.5px solid #F59E0B;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: none;
+  animation: fadeInDown 0.35s ease-out;
+}
+
+.voyage-result-banner.show {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.voyage-result-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.voyage-result-content {
+  flex: 1;
+}
+
+.voyage-result-title {
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: #92400E;
+  margin-bottom: 4px;
+}
+
+.voyage-result-text {
+  font-size: 0.94rem;
+  color: #451A03;
+  line-height: 1.5;
+}
+
+.voyage-result-deltas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.delta-pill {
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.delta-positive { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+.delta-negative { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+.delta-neutral { background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
+
+/* 선택지 버튼 그룹 */
+.voyage-choices-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #78350F;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.voyage-choices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.voyage-choice-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: #FFFBEB;
+  border: 1.5px solid #FCD34D;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #78350F;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 6px rgba(120, 53, 15, 0.04);
+}
+
+.voyage-choice-btn:hover:not(:disabled) {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.12);
+}
+
+.voyage-choice-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.voyage-choice-btn.selected {
+  background: #FDE68A;
+  border-color: #D97706;
+  box-shadow: inset 0 0 0 1px #D97706;
+}
+
+.choice-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #92400E;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.choice-text {
+  flex: 1;
+  line-height: 1.45;
+}
+
+.choice-arrow {
+  color: #D97706;
+  font-size: 1.1rem;
+  transition: transform 0.18s ease;
+}
+
+.voyage-choice-btn:hover:not(:disabled) .choice-arrow {
+  transform: translateX(3px);
+}
+
+/* 다음 단계로 가기 버튼 (선택 완료 후 등장) */
+.voyage-next-row {
+  margin-top: 18px;
+  text-align: right;
+  display: none;
+}
+
+.voyage-next-row.show {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.voyage-next-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #92400E;
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  padding: 12px 28px;
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(146, 64, 14, 0.25);
+  transition: all 0.18s ease;
+}
+
+.voyage-next-btn:hover {
+  background: #78350F;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(146, 64, 14, 0.35);
+}
+
+/* ---------- 5. 역사 지식 카드 ---------- */
+.voyage-history-card {
+  background: linear-gradient(135deg, #FFFDF8 0%, #FEF9EE 100%);
+  border: 1.5px solid #FCD34D;
+  border-radius: var(--radius-lg, 24px);
+  padding: 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 18px rgba(120, 53, 15, 0.05);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.history-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #FEF3C7;
+  color: #92400E;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  border: 1px solid #FDE68A;
+}
+
+.history-card-body {
+  flex: 1;
+}
+
+.history-card-tag {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #92400E;
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+}
+
+.history-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #451A03;
+  margin: 0 0 8px;
+}
+
+.history-card-text {
+  font-size: 0.96rem;
+  color: #44403C;
+  line-height: 1.7;
+  margin: 0;
+  word-break: keep-all;
+}
+
+/* ---------- 6. 엔딩 모달 / 화면 ---------- */
+.voyage-ending-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(41, 37, 36, 0.75);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.voyage-ending-overlay.show {
+  display: flex;
+  animation: fadeIn 0.3s ease;
+}
+
+.voyage-ending-card {
+  background: #FFF;
+  border: 3px solid #F59E0B;
+  border-radius: var(--radius-lg, 24px);
+  max-width: 620px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+  animation: zoomIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ending-badge {
+  display: inline-block;
+  font-size: 3rem;
+  margin-bottom: 8px;
+  animation: bounceBadge 1s infinite alternate ease-in-out;
+}
+
+@keyframes bounceBadge {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+
+.ending-title {
+  font-family: var(--font-display, 'Jua', sans-serif);
+  font-size: 2rem;
+  color: #78350F;
+  margin: 0 0 8px;
+}
+
+.ending-subtitle {
+  font-size: 1.05rem;
+  color: #451A03;
+  margin: 0 0 24px;
+}
+
+/* 최종 점수판 */
+.ending-scoreboard {
+  background: #FFFBEB;
+  border: 1.5px solid #FCD34D;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.ending-score-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed #FCD34D;
+}
+
+.ending-score-label {
+  font-weight: 800;
+  color: #78350F;
+  font-size: 1.05rem;
+}
+
+.ending-score-val {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #D97706;
+}
+
+.ending-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.summary-stat-box {
+  background: #fff;
+  border: 1px solid #FEF3C7;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.summary-stat-box span {
+  display: block;
+  font-size: 0.78rem;
+  color: #78716C;
+  font-weight: 700;
+}
+
+.summary-stat-box strong {
+  font-size: 1.05rem;
+  color: #292524;
+}
+
+/* 교육적 균형 설명 카드 (필수) */
+.ending-balance-notice {
+  background: #EFF6FF;
+  border: 1.5px solid #BFDBFE;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.balance-notice-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  color: #1E40AF;
+  font-size: 0.92rem;
+  margin-bottom: 6px;
+}
+
+.balance-notice-text {
+  font-size: 0.92rem;
+  color: #1E3A8A;
+  line-height: 1.65;
+  margin: 0;
+  word-break: keep-all;
+}
+
+/* 엔딩 버튼들 */
+.ending-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ending-btn-main {
+  background: #92400E;
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: 1.08rem;
+  font-weight: 800;
+  padding: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+
+.ending-btn-main:hover {
+  background: #78350F;
+}
+
+.ending-sub-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ending-btn-sub {
+  background: #fff;
+  color: #78350F;
+  border: 1.5px solid #FCD34D;
+  font-family: inherit;
+  font-size: 0.94rem;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.16s ease;
+}
+
+.ending-btn-sub:hover {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+}
+
+/* ---------- 7. 키프레임 & 반응형 미디어 쿼리 ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .voyage-container {
+    padding: 8px 12px 30px;
+  }
+
+  .voyage-title {
+    font-size: 1.7rem;
+  }
+
+  .voyage-desc {
+    font-size: 0.95rem;
+  }
+
+  .voyage-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .voyage-map-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .voyage-scene-title {
+    font-size: 1.25rem;
+  }
+
+  .voyage-choice-btn {
+    padding: 12px 14px;
+    font-size: 0.94rem;
+  }
+
+  .voyage-history-card {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ending-sub-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .port-label {
+    font-size: 0.68rem;
+    padding: 1px 4px;
+  }
+
+  .voyage-ship {
+    width: 36px;
+    height: 36px;
+  }
+
+  .voyage-ship-icon {
+    font-size: 1.8rem;
+  }
+}
