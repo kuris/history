@@ -21,7 +21,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   
-  <link rel="stylesheet" href="/style.css?v=20260908c">
+  <link rel="stylesheet" href="/style.css?v=20260908d">
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3321070604000141" crossorigin="anonymous"></script>
@@ -29,6 +29,7 @@
   
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/cg-auth.css?v=20260908d">
 </head>
 <body>
   <div class="wrap">
@@ -78,11 +79,12 @@
       <div class="page-header">
         <span class="page-badge">MY HISTORY STUDY</span>
         <h1 class="page-title">로그인하고 내 학습 기록 저장하기</h1>
-        <p class="page-desc">회원가입을 하면 <strong>풀어본 퀴즈 점수와 기출변형 학습 기록</strong>이 계정에 안전하게 보관돼요.<br>휴대폰에서 공부하고 PC에서 이어서 볼 수 있어요!</p>
+        <p class="page-desc">Google 로그인 후 다음에 이어서 공부할 수 있습니다.<br><strong>풀어본 퀴즈 점수와 기출변형 학습 기록</strong>이 계정에 보관돼, 휴대폰에서 공부하고 PC에서 이어서 볼 수 있어요!</p>
       </div>
 
       <div class="auth-card">
-        <div class="auth-tabs">
+        <!-- 이메일/비밀번호 로그인은 사용하지 않습니다. Google 로그인만 사용합니다. -->
+        <div class="auth-tabs" style="display:none;">
           <button type="button" class="auth-tab active" data-tab="login">
             <i class="fa-solid fa-right-to-bracket"></i> 로그인
           </button>
@@ -92,7 +94,7 @@
         </div>
 
         <!-- 로그인 폼 -->
-        <form class="auth-form" id="login-form">
+        <form class="auth-form" id="login-form" style="display:none;">
           <label>이메일
             <input type="email" id="login-email" required placeholder="example@email.com" autocomplete="email">
           </label>
@@ -121,8 +123,7 @@
         </form>
 
         <!-- 구글 소셜 로그인 -->
-        <div class="auth-divider"><span>또는 소셜 로그인</span></div>
-        <button type="button" class="btn-google" id="google-login-btn">
+                <button type="button" class="btn-google" id="google-login-btn">
           <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
             <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z"/>
             <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.2 5.6c4.2-3.9 6.6-9.6 6.6-17z"/>
@@ -216,10 +217,13 @@
     </footer>
   </div>
 
-  <script src="/script.js?v=20260908c"></script>
+  <script src="/script.js?v=20260908d"></script>
 
 <!-- 화면 조회 로그 수집 (관리자 통계 전용 / 사용자 기능과 무관) -->
-<script defer src="/js/supabase-config.js?v=20260908c"></script>
-<script defer src="/js/track.js?v=20260908c" data-service="history"></script>
+<script defer src="/js/supabase-config.js?v=20260908d"></script>
+<script defer src="/js/track.js?v=20260908d" data-service="history"></script>
+
+<!-- 공통 Google 로그인 (CGAuth) - 비로그인 사용자의 기존 기능에는 영향이 없습니다 -->
+<script defer src="js/cg-auth.js?v=20260908d" data-service="history" data-mount=".header-right" data-mount-mode="prepend" data-adopt="true"></script>
 </body>
 </html>
