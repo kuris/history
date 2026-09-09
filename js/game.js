@@ -2956,17 +2956,25 @@
     const params = new URLSearchParams(window.location.search);
     const initialMode = params.get('mode') || 'imjin';
 
-    if (dom.modeSelector) {
-      dom.modeSelector.addEventListener('click', (e) => {
-        const btn = e.target.closest('.mode-chip-btn');
-        if (btn) {
-          const modeKey = btn.getAttribute('data-mode');
-          if (modeKey && GAME_MODES[modeKey]) {
-            switchMode(modeKey);
+    // 모드 전환 리스너 (상단 캐러셀 탭 & 하단 전체 컬렉션 카드/버튼 모두 지원)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-mode]');
+      if (btn) {
+        const modeKey = btn.getAttribute('data-mode');
+        if (modeKey && GAME_MODES[modeKey]) {
+          e.preventDefault();
+          switchMode(modeKey);
+
+          // 하단 카드나 상단 바 이외의 위치에서 클릭했을 경우 게임 플레이 영역으로 스크롤 이동
+          if (!btn.closest('#game-mode-selector')) {
+            const playArea = document.getElementById('game-hero') || document.getElementById('game-map-card') || document.querySelector('.game-map-card');
+            if (playArea) {
+              playArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
           }
         }
-      });
-    }
+      }
+    });
 
     if (dom.nextBtn) {
       dom.nextBtn.addEventListener('click', nextStage);

@@ -22,9 +22,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   
-  <link rel="stylesheet" href="/style.css?v=20260909e">
-  <link rel="stylesheet" href="/css/game.css?v=20260909e">
-  <link rel="stylesheet" href="css/cg-auth.css?v=20260909e">
+  <link rel="stylesheet" href="/style.css?v=20260909f">
+  <link rel="stylesheet" href="/css/game.css?v=20260909f">
+  <link rel="stylesheet" href="css/cg-auth.css?v=20260909f">
 </head>
 <body>
   <div class="wrap">
@@ -233,67 +233,119 @@
         </div>
 
         <div class="upcoming-grid">
-          <!-- 1. 실크로드 상인 -->
-          <article class="upcoming-card">
+          <!-- 1. 임진왜란 방어전 -->
+          <article class="upcoming-card" data-mode="imjin" style="cursor:pointer;">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">⚔️</span>
+              <span class="upcoming-badge" style="background:#FEE2E2; color:#DC2626;">인기 추천</span>
+            </div>
+            <h3 class="upcoming-title">임진왜란 방어전</h3>
+            <p class="upcoming-desc">1592년 왜군 침략에 맞서 수군과 의병을 지휘하고 국난을 극복하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="imjin" style="width:100%; justify-content:center; background:linear-gradient(135deg, #DC2626, #991B1B); color:#fff; border:none; padding:10px; cursor:pointer;">
+              ▶ 임진왜란 플레이하기
+            </button>
+          </article>
+
+          <!-- 2. 세종의 하루 -->
+          <article class="upcoming-card" data-mode="sejong" style="cursor:pointer;">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">👑</span>
+              <span class="upcoming-badge" style="background:#FEF3C7; color:#B45309;">조선 르네상스</span>
+            </div>
+            <h3 class="upcoming-title">세종의 하루</h3>
+            <p class="upcoming-desc">새벽 경연부터 훈민정음 28자 반포와 과학 발명까지 성군의 하루를 경험하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="sejong" style="width:100%; justify-content:center; background:linear-gradient(135deg, #D97706, #B45309); color:#fff; border:none; padding:10px; cursor:pointer;">
+              ▶ 세종의 하루 플레이하기
+            </button>
+          </article>
+
+          <!-- 3. 독립운동 비밀 작전 -->
+          <article class="upcoming-card" data-mode="independence" style="cursor:pointer;">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">🇰🇷</span>
+              <span class="upcoming-badge" style="background:#DCFCE7; color:#15803D;">근현대사</span>
+            </div>
+            <h3 class="upcoming-title">독립운동 비밀 작전</h3>
+            <p class="upcoming-desc">상하이 임시정부와 만주 독립군, 한국광복군을 이끌고 조국 광복을 달성하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="independence" style="width:100%; justify-content:center; background:linear-gradient(135deg, #16A34A, #15803D); color:#fff; border:none; padding:10px; cursor:pointer;">
+              ▶ 독립운동 플레이하기
+            </button>
+          </article>
+
+          <!-- 4. 대항해 탐험 -->
+          <article class="upcoming-card" data-mode="voyage" style="cursor:pointer;">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">⛵</span>
+              <span class="upcoming-badge" style="background:#E0F2FE; color:#0369A1;">세계사 탐험</span>
+            </div>
+            <h3 class="upcoming-title">대항해 탐험</h3>
+            <p class="upcoming-desc">리스본에서 출발해 거친 대서양과 희망봉을 넘어 인도로 가는 신항로를 개척하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="voyage" style="width:100%; justify-content:center; background:linear-gradient(135deg, #0284C7, #0369A1); color:#fff; border:none; padding:10px; cursor:pointer;">
+              ▶ 대항해 탐험 플레이하기
+            </button>
+          </article>
+
+          <!-- 5. 실크로드 상인 -->
+          <article class="upcoming-card" data-mode="silkroad" style="cursor:pointer;">
             <div class="upcoming-card-head">
               <span class="upcoming-icon">🐫</span>
               <span class="upcoming-badge" style="background:#FFEDD5; color:#C2410C;">세계사 교역</span>
             </div>
             <h3 class="upcoming-title">실크로드 상인</h3>
             <p class="upcoming-desc">장안에서 로마까지! 사막의 오아시스와 비단길을 건너며 동서양 문명과 교역 물품을 거래하세요.</p>
-            <button type="button" class="mode-chip-btn" data-mode="silkroad" style="width:100%; justify-content:center; background:linear-gradient(135deg, #EA580C, #C2410C); color:#fff; border:none; padding:10px;">
+            <button type="button" class="mode-chip-btn" data-mode="silkroad" style="width:100%; justify-content:center; background:linear-gradient(135deg, #EA580C, #C2410C); color:#fff; border:none; padding:10px; cursor:pointer;">
               ▶ 실크로드 플레이하기
             </button>
           </article>
 
-          <!-- 2. 삼국 통일 전략 -->
-          <article class="upcoming-card">
+          <!-- 6. 삼국 통일 전략 -->
+          <article class="upcoming-card" data-mode="samguk" style="cursor:pointer;">
             <div class="upcoming-card-head">
               <span class="upcoming-icon">🏹</span>
               <span class="upcoming-badge" style="background:#F3E8FF; color:#7E22CE;">한국사 전략</span>
             </div>
             <h3 class="upcoming-title">삼국 통일 전략</h3>
             <p class="upcoming-desc">김유신과 김춘추의 신라가 되어 고구려·백제와의 외교와 결전을 펼치고 삼국 통일을 완성하세요.</p>
-            <button type="button" class="mode-chip-btn" data-mode="samguk" style="width:100%; justify-content:center; background:linear-gradient(135deg, #9333EA, #7E22CE); color:#fff; border:none; padding:10px;">
+            <button type="button" class="mode-chip-btn" data-mode="samguk" style="width:100%; justify-content:center; background:linear-gradient(135deg, #9333EA, #7E22CE); color:#fff; border:none; padding:10px; cursor:pointer;">
               ▶ 삼국 통일 플레이하기
             </button>
           </article>
 
-          <!-- 3. 고려 외교 미션 -->
-          <article class="upcoming-card">
+          <!-- 7. 고려 외교 미션 -->
+          <article class="upcoming-card" data-mode="goryeo" style="cursor:pointer;">
             <div class="upcoming-card-head">
               <span class="upcoming-icon">🕊️</span>
               <span class="upcoming-badge" style="background:#D1FAE5; color:#047857;">외교 담판</span>
             </div>
             <h3 class="upcoming-title">고려 외교 미션</h3>
             <p class="upcoming-desc">거란의 80만 대군을 말 한마디로 물리친 서희의 담판! 피 한 방울 흘리지 않고 강동 6주를 획득하세요.</p>
-            <button type="button" class="mode-chip-btn" data-mode="goryeo" style="width:100%; justify-content:center; background:linear-gradient(135deg, #059669, #047857); color:#fff; border:none; padding:10px;">
+            <button type="button" class="mode-chip-btn" data-mode="goryeo" style="width:100%; justify-content:center; background:linear-gradient(135deg, #059669, #047857); color:#fff; border:none; padding:10px; cursor:pointer;">
               ▶ 고려 외교 플레이하기
             </button>
           </article>
 
-          <!-- 4. 로마 제국 국경 방어 -->
-          <article class="upcoming-card">
+          <!-- 8. 로마 제국 국경 방어 -->
+          <article class="upcoming-card" data-mode="rome" style="cursor:pointer;">
             <div class="upcoming-card-head">
               <span class="upcoming-icon">🏛️</span>
               <span class="upcoming-badge" style="background:#FEE2E2; color:#B91C1C;">서양 고대사</span>
             </div>
             <h3 class="upcoming-title">로마 제국 국경 방어</h3>
             <p class="upcoming-desc">하드리아누스 장벽과 라인강 국경을 지키는 로마 군단장! 게르만 부족의 침입을 막고 팍스 로마나를 수호하세요.</p>
-            <button type="button" class="mode-chip-btn" data-mode="rome" style="width:100%; justify-content:center; background:linear-gradient(135deg, #DC2626, #991B1B); color:#fff; border:none; padding:10px;">
+            <button type="button" class="mode-chip-btn" data-mode="rome" style="width:100%; justify-content:center; background:linear-gradient(135deg, #DC2626, #991B1B); color:#fff; border:none; padding:10px; cursor:pointer;">
               ▶ 로마 방어 플레이하기
             </button>
           </article>
 
-          <!-- 5. 프랑스 혁명 선택 게임 -->
-          <article class="upcoming-card">
+          <!-- 9. 프랑스 혁명 선택 게임 -->
+          <article class="upcoming-card" data-mode="french" style="cursor:pointer;">
             <div class="upcoming-card-head">
               <span class="upcoming-icon">🇫🇷</span>
               <span class="upcoming-badge" style="background:#DBEAFE; color:#1D4ED8;">시민 혁명</span>
             </div>
             <h3 class="upcoming-title">프랑스 혁명 선택 게임</h3>
             <p class="upcoming-desc">1789년 바스티유 감옥 습격부터 인권선언, 공화정 수립까지! 자유·평등·우애의 역사를 직접 결정하세요.</p>
-            <button type="button" class="mode-chip-btn" data-mode="french" style="width:100%; justify-content:center; background:linear-gradient(135deg, #2563EB, #1D4ED8); color:#fff; border:none; padding:10px;">
+            <button type="button" class="mode-chip-btn" data-mode="french" style="width:100%; justify-content:center; background:linear-gradient(135deg, #2563EB, #1D4ED8); color:#fff; border:none; padding:10px; cursor:pointer;">
               ▶ 프랑스 혁명 플레이하기
             </button>
           </article>
@@ -377,7 +429,7 @@
   </div>
 
   <!-- 게임 전용 스크립트 -->
-  <script src="/js/game.js?v=20260909e"></script>
+  <script src="/js/game.js?v=20260909f"></script>
 
   <!-- 화면 조회 로그 수집 (관리자 통계 전용 / 사용자 기능과 무관) -->
   <script defer src="/js/supabase-config.js?v=20260909e"></script>
