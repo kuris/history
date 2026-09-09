@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>체험형 역사 게임 존 - 역사야 놀자</title>
+  <meta name="description" content="임진왜란 방어전, 세종의 하루, 독립운동 비밀 작전, 대항해 탐험 등 역사적 결단을 내리고 역사를 재미있게 배우는 시뮬레이션 게임입니다.">
+  <meta name="keywords" content="역사 게임, 임진왜란 게임, 세종대왕 게임, 독립운동 게임, 대항해시대 게임, 초등 역사, 중등 역사, 역사야 놀자">
+  <link rel="canonical" href="https://history.chatgpts.kr/game">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="역사야 놀자">
+  <meta property="og:title" content="체험형 역사 게임 존 - 역사야 놀자">
+  <meta property="og:description" content="역사 속 결단의 순간으로! 임진왜란, 세종대왕, 독립운동을 게임으로 체험하고 최고 기록과 배지에 도전하세요.">
+  <meta property="og:url" content="https://history.chatgpts.kr/game">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%E2%9A%94%EF%B8%8F%3C%2Ftext%3E%3C%2Fsvg%3E">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/style.css?v=20260909e">
+  <link rel="stylesheet" href="/css/game.css?v=20260909e">
+  <link rel="stylesheet" href="css/cg-auth.css?v=20260909e">
+</head>
+<body>
+  <div class="wrap">
+    <!-- 사이트 헤더 -->
+    <header class="site-head">
+      <a href="index.html" class="brand-logo">
+        <span class="logo-char">史</span>
+        <span>역사야 <span class="dot">놀자!</span></span>
+      </a>
+      <div class="header-right">
+        <a href="login.html" class="family-btn" id="header-auth-btn">
+          <span>👤</span> <span id="auth-status-text">내 학습실</span>
+        </a>
+        <div class="family-nav-wrap">
+          <button type="button" class="family-btn" id="family-btn">
+            다른 놀자 서비스 ▾
+          </button>
+          <div class="family-dropdown" id="family-dropdown">
+            <a href="https://hanja.chatgpts.kr" target="_blank" rel="noopener">📖 한자야 놀자</a>
+            <a href="https://voca.chatgpts.kr" target="_blank" rel="noopener">⚡ 단어야 놀자</a>
+            <a href="https://fortune.chatgpts.kr" target="_blank" rel="noopener">🔮 운세야 놀자</a>
+            <a href="https://mindtest.chatgpts.kr" target="_blank" rel="noopener">🧠 마인드테스트</a>
+            <a href="https://work.chatgpts.kr" target="_blank" rel="noopener">💼 워크야 놀자</a>
+            <a href="https://money.chatgpts.kr" target="_blank" rel="noopener">💰 머니야 놀자</a>
+            <a href="https://tools.chatgpts.kr" target="_blank" rel="noopener">🛠️ 문서야 놀자</a>
+            <a href="https://bible.chatgpts.kr" target="_blank" rel="noopener">✝️ 성경아 놀자</a>
+            <a href="https://chatgpts.kr" target="_blank" rel="noopener">🏠 chatgpts.kr</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 상단 스크롤 메뉴 -->
+    <nav class="nav-scroll" aria-label="메인 메뉴">
+      <a href="index.html" class="nav-chip">🏠 홈</a>
+      <a href="korea.html" class="nav-chip">📜 한국사</a>
+      <a href="world.html" class="nav-chip">🌍 세계사</a>
+      <a href="game.html" class="nav-chip active">🎮 역사 게임</a>
+      <a href="voyage.html" class="nav-chip">⛵ 대항해 탐험</a>
+      <a href="timeline.html" class="nav-chip">⏳ 연표 보기</a>
+      <a href="map.html" class="nav-chip">🗺️ 역사 지도</a>
+      <a href="exam.html" class="nav-chip">📝 기출변형</a>
+      <a href="print.html" class="nav-chip">🖨️ 연표 프린트</a>
+      <a href="quiz.html" class="nav-chip">🎯 역사 퀴즈</a>
+      <a href="login.html" class="nav-chip">👤 내 학습실</a>
+    </nav>
+
+    <!-- 메인 콘텐츠 컨테이너 -->
+    <main class="game-container">
+
+      <!-- 1. 게임 모드 선택 탭 (9대 역사 게임 모드 지원) -->
+      <nav class="game-mode-selector" id="game-mode-selector" aria-label="게임 모드 선택">
+        <button type="button" class="mode-chip-btn active" data-mode="imjin">
+          <span>⚔️ 임진왜란 방어전</span>
+          <span class="mode-chip-badge">인기</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="sejong">
+          <span>👑 세종의 하루</span>
+          <span class="mode-chip-badge">추천</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="independence">
+          <span>🇰🇷 독립운동 비밀 작전</span>
+          <span class="mode-chip-badge">감동</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="voyage">
+          <span>⛵ 대항해 탐험</span>
+          <span class="mode-chip-badge">세계사</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="silkroad">
+          <span>🐫 실크로드 상인</span>
+          <span class="mode-chip-badge">교역</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="samguk">
+          <span>🏹 삼국 통일 전략</span>
+          <span class="mode-chip-badge">전략</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="goryeo">
+          <span>🕊️ 고려 외교 미션</span>
+          <span class="mode-chip-badge">담판</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="rome">
+          <span>🏛️ 로마 제국 방어</span>
+          <span class="mode-chip-badge">제국</span>
+        </button>
+        <button type="button" class="mode-chip-btn" data-mode="french">
+          <span>🇫🇷 프랑스 혁명</span>
+          <span class="mode-chip-badge">시민</span>
+        </button>
+      </nav>
+
+      <!-- 2. 히어로 배너 -->
+      <section class="game-hero theme-imjin" id="game-hero">
+        <span class="game-badge" id="game-hero-badge"><i class="fa-solid fa-shield-halved"></i> 조선 구국 결전 시뮬레이션</span>
+        <h1 class="game-hero-title" id="game-hero-title">⚔️ 임진왜란 방어전: 1592 조선을 지켜라!</h1>
+        <p class="game-hero-desc" id="game-hero-desc">
+          1592년 4월, 왜군 20만이 물밀듯이 침략해 왔습니다. 군량과 병력을 확보하고, 수군과 의병을 결집하여 도탄에 빠진 조선을 구원하세요!
+        </p>
+        <button type="button" class="game-start-btn" id="game-hero-start-btn">
+          <i class="fa-solid fa-play"></i> 역사 결단 시작하기
+        </button>
+      </section>
+
+      <!-- 3. 상태 표시 바 (HUD) -->
+      <section class="game-hud" id="game-hud" aria-label="게임 상태 현황">
+        <div class="game-hud-top">
+          <div class="game-current-stage">
+            <span>📍 역사적 국면:</span>
+            <span class="stage-pill" id="game-current-stage-pill">1단계 · 전쟁 발발</span>
+          </div>
+          <div class="game-hud-meta">
+            <div class="game-best-score">
+              내 최고 기록: <strong id="game-best-score-val">—</strong>
+            </div>
+            <div class="game-step-indicator" id="game-step-indicator">1 / 6</div>
+          </div>
+        </div>
+
+        <!-- 4대 관리 자원 그리드 (JS 동적 렌더링) -->
+        <div class="game-stats-grid" id="game-stats-grid"></div>
+      </section>
+
+      <!-- 4. 인터랙티브 역사 지도 카드 (Animated Map & Scene Visual) -->
+      <section class="game-map-card" aria-label="역사 전선 지도">
+        <div class="game-map-header">
+          <div class="game-map-title">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span id="game-map-title-text">⚔️ 1592 임진왜란 전선 지도</span>
+          </div>
+          <div class="game-map-legend">
+            <span><span class="legend-dot dot-passed"></span>지난 거점</span>
+            <span><span class="legend-dot dot-current"></span>현재 위치</span>
+            <span><span class="legend-dot dot-target"></span>목표 지점</span>
+          </div>
+        </div>
+
+        <div class="game-map-wrapper">
+          <!-- SVG 지도 캔버스 (지형 & 패스) -->
+          <svg class="game-map-svg" id="game-map-svg" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+            <!-- JS 동적 생성 -->
+          </svg>
+
+          <!-- 체크포인트 마커 오버레이 -->
+          <div class="game-map-points" id="game-map-points"></div>
+
+          <!-- 동적 글라이딩 애니메이션 토큰 (배, 군단, 말, 임금 등) -->
+          <div class="game-map-token" id="game-map-token">⚔️</div>
+        </div>
+
+        <!-- 단계별 진행 도트 -->
+        <div class="scene-stage-dots" id="scene-stage-dots"></div>
+      </section>
+
+      <!-- 5. 상황 설명 & 결단 선택지 카드 -->
+      <section class="game-action-card" aria-label="결단의 순간">
+        <span class="scene-tag" id="scene-tag">제1단계 · 1592년 4월 부산포</span>
+        <h3 class="scene-title" id="scene-title">왜군의 기습 상륙과 전쟁 발발</h3>
+        <p class="scene-desc" id="scene-desc">
+          수많은 왜선이 부산포 앞바다를 뒤덮고 조총으로 무장한 정예병이 기습 상륙했습니다. 조정과 군사들의 첫 대응을 결정해야 합니다.
+        </p>
+
+        <!-- 선택 결과 알림 배너 -->
+        <div class="game-result-banner" id="game-result-banner">
+          <div class="result-icon" id="result-icon">📜</div>
+          <div>
+            <div class="result-title" id="result-title">당신의 결단과 결과</div>
+            <div class="result-text" id="result-text">결과 텍스트가 표시됩니다.</div>
+            <div class="result-deltas" id="result-deltas"></div>
+          </div>
+        </div>
+
+        <!-- 선택지 목록 -->
+        <div class="game-choices-title" id="game-choices-title">
+          <i class="fa-solid fa-feather-pointed"></i> 당신의 역사적 결단을 선택하세요:
+        </div>
+        <div class="game-choices-list" id="game-choices-list">
+          <!-- JS에서 동적 렌더링 -->
+        </div>
+
+        <!-- 다음 단계 이동 버튼 -->
+        <div class="game-next-row" id="game-next-row">
+          <button type="button" class="game-next-btn" id="game-next-btn">
+            <i class="fa-solid fa-arrow-right"></i> 다음 역사적 국면으로 이동
+          </button>
+        </div>
+      </section>
+
+      <!-- 6. 역사 돋보기 지식 카드 -->
+      <section class="game-history-card" aria-label="역사 지식">
+        <div class="history-card-icon">
+          <i class="fa-solid fa-book-open-reader"></i>
+        </div>
+        <div>
+          <div class="history-card-tag" id="game-history-card-tag">역사 탐구 돋보기</div>
+          <h4 class="history-card-title" id="game-history-card-title">1592년 임진왜란의 발발</h4>
+          <p class="history-card-text" id="game-history-card-text">
+            왜군은 신식 무기인 조총과 오랜 실전 경험으로 단숨에 한양까지 북상했습니다.
+          </p>
+        </div>
+      </section>
+
+      <!-- 7. 9대 역사 게임 전체 컬렉션 쇼케이스 -->
+      <section class="upcoming-section">
+        <div class="upcoming-head">
+          <h2>🌟 역사야 놀자 9대 체험형 역사 게임 컬렉션</h2>
+          <p>원하는 역사적 시대를 선택하여 직접 결단을 내리고 역사의 주인공이 되어보세요!</p>
+        </div>
+
+        <div class="upcoming-grid">
+          <!-- 1. 실크로드 상인 -->
+          <article class="upcoming-card">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">🐫</span>
+              <span class="upcoming-badge" style="background:#FFEDD5; color:#C2410C;">세계사 교역</span>
+            </div>
+            <h3 class="upcoming-title">실크로드 상인</h3>
+            <p class="upcoming-desc">장안에서 로마까지! 사막의 오아시스와 비단길을 건너며 동서양 문명과 교역 물품을 거래하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="silkroad" style="width:100%; justify-content:center; background:linear-gradient(135deg, #EA580C, #C2410C); color:#fff; border:none; padding:10px;">
+              ▶ 실크로드 플레이하기
+            </button>
+          </article>
+
+          <!-- 2. 삼국 통일 전략 -->
+          <article class="upcoming-card">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">🏹</span>
+              <span class="upcoming-badge" style="background:#F3E8FF; color:#7E22CE;">한국사 전략</span>
+            </div>
+            <h3 class="upcoming-title">삼국 통일 전략</h3>
+            <p class="upcoming-desc">김유신과 김춘추의 신라가 되어 고구려·백제와의 외교와 결전을 펼치고 삼국 통일을 완성하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="samguk" style="width:100%; justify-content:center; background:linear-gradient(135deg, #9333EA, #7E22CE); color:#fff; border:none; padding:10px;">
+              ▶ 삼국 통일 플레이하기
+            </button>
+          </article>
+
+          <!-- 3. 고려 외교 미션 -->
+          <article class="upcoming-card">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">🕊️</span>
+              <span class="upcoming-badge" style="background:#D1FAE5; color:#047857;">외교 담판</span>
+            </div>
+            <h3 class="upcoming-title">고려 외교 미션</h3>
+            <p class="upcoming-desc">거란의 80만 대군을 말 한마디로 물리친 서희의 담판! 피 한 방울 흘리지 않고 강동 6주를 획득하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="goryeo" style="width:100%; justify-content:center; background:linear-gradient(135deg, #059669, #047857); color:#fff; border:none; padding:10px;">
+              ▶ 고려 외교 플레이하기
+            </button>
+          </article>
+
+          <!-- 4. 로마 제국 국경 방어 -->
+          <article class="upcoming-card">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">🏛️</span>
+              <span class="upcoming-badge" style="background:#FEE2E2; color:#B91C1C;">서양 고대사</span>
+            </div>
+            <h3 class="upcoming-title">로마 제국 국경 방어</h3>
+            <p class="upcoming-desc">하드리아누스 장벽과 라인강 국경을 지키는 로마 군단장! 게르만 부족의 침입을 막고 팍스 로마나를 수호하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="rome" style="width:100%; justify-content:center; background:linear-gradient(135deg, #DC2626, #991B1B); color:#fff; border:none; padding:10px;">
+              ▶ 로마 방어 플레이하기
+            </button>
+          </article>
+
+          <!-- 5. 프랑스 혁명 선택 게임 -->
+          <article class="upcoming-card">
+            <div class="upcoming-card-head">
+              <span class="upcoming-icon">🇫🇷</span>
+              <span class="upcoming-badge" style="background:#DBEAFE; color:#1D4ED8;">시민 혁명</span>
+            </div>
+            <h3 class="upcoming-title">프랑스 혁명 선택 게임</h3>
+            <p class="upcoming-desc">1789년 바스티유 감옥 습격부터 인권선언, 공화정 수립까지! 자유·평등·우애의 역사를 직접 결정하세요.</p>
+            <button type="button" class="mode-chip-btn" data-mode="french" style="width:100%; justify-content:center; background:linear-gradient(135deg, #2563EB, #1D4ED8); color:#fff; border:none; padding:10px;">
+              ▶ 프랑스 혁명 플레이하기
+            </button>
+          </article>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 8. 최종 엔딩 모달 (Completion Modal) -->
+    <div class="game-ending-overlay" id="game-ending-overlay" role="dialog" aria-modal="true">
+      <div class="game-ending-card">
+        <span class="ending-badge-icon" id="ending-badge-icon">👑</span>
+        <h2 class="ending-title" id="ending-title">역사적 위업 달성 완료!</h2>
+        <p class="ending-subtitle" id="ending-subtitle">
+          역사의 중대한 기로에서 용기 있는 결단으로 역사를 훌륭히 이끌었습니다.
+        </p>
+
+        <!-- 최종 점수판 -->
+        <div class="ending-scoreboard">
+          <div class="ending-score-hero">
+            <div>
+              <div class="ending-score-label">최종 획득 점수</div>
+              <div style="font-size:0.95rem;font-weight:800;color:#92400E;margin-top:2px;" id="ending-title-badge">👑 전설의 영웅</div>
+            </div>
+            <div class="ending-score-val" id="ending-score-val">85점</div>
+          </div>
+
+          <!-- 남은 자원 요약 -->
+          <div class="ending-stats-summary" id="ending-stats-summary"></div>
+
+          <div style="margin-top:12px;font-size:0.86rem;color:#6B7280;text-align:center;" id="ending-best-notice"></div>
+        </div>
+
+        <!-- 오늘 배운 핵심 역사 정리 -->
+        <div class="ending-takeaways">
+          <h4><i class="fa-solid fa-graduation-cap"></i> 오늘 배운 역사 핵심 요약</h4>
+          <ul id="ending-takeaways-list"></ul>
+        </div>
+
+        <!-- 액션 버튼들 -->
+        <div class="ending-actions">
+          <button type="button" class="ending-btn-main" id="game-restart-btn">
+            <i class="fa-solid fa-rotate-right"></i> 다시 도전하여 최고 점수 갱신하기
+          </button>
+          <button type="button" class="ending-btn-share" id="game-share-btn">
+            <i class="fa-solid fa-share-nodes"></i> 내 기록 친구에게 공유하기
+          </button>
+          <div class="ending-sub-actions" id="ending-related-links">
+            <!-- JS에서 동적 렌더링 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 토스트 메시지 -->
+    <div class="game-toast" id="game-toast"></div>
+
+    <!-- 사이트 푸터 -->
+    <footer class="site-foot">
+      <div class="disclaimer-box">
+        <strong>※ 참고용 학습자료 안내</strong>
+        역사야 놀자의 콘텐츠는 학생들의 역사 흐름 이해와 시험 대비 복습을 돕기 위한 참고용 학습자료입니다.
+        실제 시험 출제 내용과 완전히 일치하지 않을 수 있으며, 교과서와 학교 수업 자료를 함께 참고해 주세요.
+      </div>
+      <nav class="footer-nav-links" aria-label="푸터 링크">
+        <a href="index.html">홈</a> ·
+        <a href="korea.html">한국사</a> ·
+        <a href="world.html">세계사</a> ·
+        <a href="game.html">역사 게임</a> ·
+        <a href="voyage.html">대항해 탐험</a> ·
+        <a href="timeline.html">연표 보기</a> ·
+        <a href="exam.html">기출변형 문제</a> ·
+        <a href="print.html">연표 프린트</a> ·
+        <a href="quiz.html">역사 퀴즈</a> ·
+        <a href="login.html">내 학습실</a>
+      </nav>
+      <div class="footer-copy">
+        <p>© 2026 역사야 놀자 (history.chatgpts.kr) · All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 게임 전용 스크립트 -->
+  <script src="/js/game.js?v=20260909e"></script>
+
+  <!-- 화면 조회 로그 수집 (관리자 통계 전용 / 사용자 기능과 무관) -->
+  <script defer src="/js/supabase-config.js?v=20260909e"></script>
+  <script defer src="/js/track.js?v=20260909e" data-service="history"></script>
+
+  <!-- 공통 Google 로그인 (CGAuth) - 비로그인 사용자의 기존 기능에는 영향이 없습니다 -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="js/cg-auth.js?v=20260909e" data-service="history" data-mount=".header-right" data-mount-mode="prepend" data-adopt="true"></script>
+  <script defer src="js/history-recent.js?v=20260909e"></script>
+</body>
+</html>

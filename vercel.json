@@ -9,6 +9,14 @@
     {
       "source": "/voyage",
       "destination": "/voyage.html"
+    },
+    {
+      "source": "/game",
+      "destination": "/game.html"
+    },
+    {
+      "source": "/games",
+      "destination": "/game.html"
     }
   ],
   "headers": [

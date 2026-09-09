@@ -150,3 +150,34 @@ as $$
   from public.quiz_attempts a
   where a.user_id = auth.uid();
 $$;
+
+-- ------------------------------------------------------------
+-- 4) game_records : 체험형 역사 게임 도전 기록 및 최고 점수/배지
+-- ------------------------------------------------------------
+create table if not exists public.game_records (
+  id            bigint generated always as identity primary key,
+  user_id       uuid        not null references auth.users(id) on delete cascade,
+  game_mode     text        not null,              -- 'imjin' | 'sejong' | 'independence' | 'voyage'
+  score         integer     not null default 0,
+  title_badge   text,                              -- 예: '👑 구국의 영웅 성웅'
+  resources     jsonb,                             -- 최종 자원 스냅샷
+  completed_at  timestamptz not null default now()
+);
+
+create index if not exists game_records_user_mode_idx
+  on public.game_records (user_id, game_mode, score desc);
+
+alter table public.game_records enable row level security;
+
+drop policy if exists "own game_records: select" on public.game_records;
+create policy "own game_records: select" on public.game_records
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "own game_records: insert" on public.game_records;
+create policy "own game_records: insert" on public.game_records
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "own game_records: delete" on public.game_records;
+create policy "own game_records: delete" on public.game_records
+  for delete using (auth.uid() = user_id);
+

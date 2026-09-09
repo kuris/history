@@ -10897,6 +10897,90 @@
       }
 
       renderWrongNotes();
+      renderGameRecords();
+    }
+
+    // ------------------------------------------------------------
+    // 역사 게임 기록 & 획득 배지 렌더링
+    // ------------------------------------------------------------
+    async function renderGameRecords() {
+      const box = document.getElementById('game-records-list');
+      if (!box) return;
+
+      const modeNames = {
+        imjin: { name: '⚔️ 임진왜란 방어전', url: 'game.html?mode=imjin' },
+        sejong: { name: '👑 세종의 하루', url: 'game.html?mode=sejong' },
+        independence: { name: '🇰🇷 독립운동 비밀 작전', url: 'game.html?mode=independence' },
+        voyage: { name: '⛵ 대항해 탐험', url: 'game.html?mode=voyage' }
+      };
+
+      let records = [];
+      if (window.CGAuth && typeof window.CGAuth.listRecords === 'function') {
+        try {
+          records = await window.CGAuth.listRecords('game_records', {
+            orderBy: 'score',
+            ascending: false,
+            limit: 10
+          });
+        } catch (_) {}
+      }
+
+      const localScores = {};
+      Object.keys(modeNames).forEach(m => {
+        try {
+          const v = localStorage.getItem(`history_game_best_${m}`);
+          if (v) localScores[m] = parseInt(v, 10);
+        } catch (_) {}
+      });
+
+      let badges = [];
+      try {
+        badges = JSON.parse(localStorage.getItem('history_game_badges') || '[]');
+      } catch (_) {}
+
+      const hasAny = records.length > 0 || Object.keys(localScores).length > 0;
+      if (!hasAny) {
+        box.innerHTML = `
+          <p class="wrong-note-empty">
+            아직 도전한 역사 게임 기록이 없어요.<br>
+            <strong>임진왜란 방어전</strong>, <strong>세종의 하루</strong>, <strong>독립운동 비밀 작전</strong>에 도전하고 나만의 역사 칭호와 배지를 획득해 보세요!
+          </p>
+          <div style="text-align:center; margin-top:14px;">
+            <a href="game.html" class="btn-primary" style="font-size:14px; padding:8px 20px; background:linear-gradient(135deg, #D97706, #B45309); border-color:#B45309;">🎮 역사 게임 도전하기</a>
+          </div>`;
+        return;
+      }
+
+      let html = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; margin-bottom:12px;">';
+      Object.entries(modeNames).forEach(([modeKey, info]) => {
+        const supRecord = records.find(r => r.game_mode === modeKey);
+        const bestScore = Math.max(supRecord?.score || 0, localScores[modeKey] || 0);
+        const badgeTitle = supRecord?.title_badge || (bestScore > 0 ? '명예 도전자' : '미도전');
+        html += `
+          <div style="background:#FFFDF8; border:1.5px solid #FDE68A; border-radius:12px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-weight:800; font-size:14px; color:#78350F;">${info.name}</span>
+              <a href="${info.url}" style="font-size:12px; font-weight:700; color:#D97706; text-decoration:none;">도전 →</a>
+            </div>
+            <div style="font-size:13px; color:#4B5563;">
+              최고 점수: <strong style="color:#D97706; font-size:15px;">${bestScore > 0 ? bestScore + '점' : '—'}</strong>
+            </div>
+            <div style="font-size:12px; color:#92400E; margin-top:2px;">
+              칭호: ${badgeTitle}
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+
+      if (badges.length > 0) {
+        html += `
+          <div style="background:#F9FAFB; border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:800; color:#4B5563;">보유 배지:</span>
+            ${badges.map(b => `<span style="font-size:11.5px; font-weight:700; background:#FEF3C7; color:#92400E; padding:3px 8px; border-radius:6px;">🏆 ${b}</span>`).join('')}
+          </div>`;
+      }
+
+      box.innerHTML = html;
     }
 
     // ------------------------------------------------------------
